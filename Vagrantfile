@@ -63,33 +63,39 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Adapted from: http://docs.geonode.org/en/latest/tutorials/devel/install_devmode/index.html#install-devmode
 
-    sudo apt-get update
+    apt-get update
     # Build tools and libraries
-    sudo apt-get install -y build-essential libxml2-dev libxslt1-dev libpq-dev zlib1g-dev libgdal-dev
+    apt-get install -y build-essential libxml2-dev libxslt1-dev libpq-dev zlib1g-dev libgdal-dev
 
     # Python dependencies
-    sudo apt-get install -y python-dev python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-pip python-software-properties python-gdal
-    sudo pip install virtualenvwrapper
+    apt-get install -y python-dev python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-pip python-software-properties python-gdal
+    pip install virtualenvwrapper
 
     # Postgis
-    sudo apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
+    touch /etc/apt/sources.list.d/pgdg.list
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+    apt-key add -
+    apt-get update
+
+    apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
 
     # Java
-    sudo apt-get install -y --force-yes openjdk-6-jdk ant maven2 --no-install-recommends
+    apt-get install -y --force-yes openjdk-6-jdk ant maven2 --no-install-recommends
 
     # Supporting tools
-    sudo apt-get install -y git gettext
+    apt-get install -y git gettext
 
     # Nodejs for client build tools
     apt-get install curl build-essential
     curl -sL https://deb.nodesource.com/setup | bash -
     apt-get install -y nodejs
-    sudo npm install -y -g bower
-    sudo npm install -y -g grunt-cli
+    npm install -y -g bower
+    npm install -y -g grunt-cli
 
     # Core repo
     git clone https://github.com/GeoNode/geonode.git
-    sudo chown -R vagrant:vagrant geonode
+    chown -R vagrant:vagrant geonode
 
   SHELL
 end
