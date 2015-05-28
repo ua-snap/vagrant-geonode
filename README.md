@@ -13,7 +13,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
 	su postgres
 	psql
 	(postgres=#) \password postgres
-	(postgres=#) CREATE USER geonode WITH PASSWORD 'geonode'; # should be same as password in setting.py
+	(postgres=#) CREATE USER geonode WITH PASSWORD 'geonode';
 	(postgres=#) CREATE DATABASE "geonode";
 	(postgres=#) GRANT ALL PRIVILEGES ON DATABASE "geonode" to geonode;
 	(postgres=#) \q
@@ -29,15 +29,11 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
 	```
 	mkvirtualenv geonode
 	workon geonode
-	cd geonode
-	# Needed to get gdal to install properly
-	export CPLUS_INCLUDE_PATH=/usr/include/gdal
-	export C_INCLUDE_PATH=/usr/include/gdal
-	# Todo, these steps aren't working yet!
 	pip install -e geonode
 	```
  * Compile then run the Geonode server:
    ```
+   cd geonode
    paver setup
    paver start
    ```
