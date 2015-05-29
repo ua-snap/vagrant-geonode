@@ -80,7 +80,7 @@ Vagrant.configure(2) do |config|
     apt-get update
     apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
 
-    # GDAL libraries from unstable repository, including dependencies in experimental repository
+    # GDAL libraries from unstable repository
     apt-get install -y libgdal1h libgdal-dev
 
     # Python dependencies
