@@ -81,9 +81,6 @@ Vagrant.configure(2) do |config|
     apt-get update
     apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
 
-    # Upgrade gcc and g++
-    apt-get -y --only-upgrade gcc g++
-
     # GDAL libraries from unstable repository, including dependencies in experimental repository
     apt-get install -y libgdal1h libgdal-dev
 
