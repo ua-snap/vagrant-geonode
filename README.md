@@ -65,7 +65,6 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
    cd ..
    pip install -e GDAL-1.10.0
-   rm -fr GDAL-1.10.0
    ```
 
  * Compile then run the Geonode server:
