@@ -57,7 +57,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    gdal_config = /usr/bin/gdal-config
    ```
 
- * Run the following commands:
+ * Run the following commands to modify and install the GDAL module:
 
    ```
    export CPLUS_INCLUDE_PATH=/usr/include/gdal
@@ -65,12 +65,12 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
    cd ..
    pip install -e GDAL-1.10.0
+   rm GDAL-1.10.0.tar.gz
    ```
 
  * Compile then run the Geonode server:
 
    ```
-   cd geonode
    paver setup
    paver start
    ```
