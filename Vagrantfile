@@ -67,7 +67,6 @@ Vagrant.configure(2) do |config|
     export DEBIAN_FRONTEND=noninteractive
 
     echo "deb http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
-    echo "deb http://http.us.debian.org/debian experimental main" >> /etc/apt/sources.list
     apt-get update
 
     # Build tools and libraries
