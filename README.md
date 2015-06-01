@@ -68,11 +68,21 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    rm GDAL-1.10.0.tar.gz
    ```
 
- * Compile then run the Geonode server:
+ * Preparing to run the Geonode server:
 
    ```
    paver setup
-   paver start
+   ```
+
+ * Modify the IP addresses so we can see it from our host machine.
+
+   * Edit the `pavement.py` file, around line 348 change the url to be `http://0.0.0.0:8080/geoserver/`
+   * Edit the `geonode/settings.py` file, around line 504 change `'LOCATION'` to `http://0.0.0.0:8080/geoserver`.
+
+ * Run the server:
+
+   ```
+   paver start_geoserver && paver start_django -b 0.0.0.0:8000
    ```
 
 GeoNode should be available on your host machine at `http://localhost:8888`.
