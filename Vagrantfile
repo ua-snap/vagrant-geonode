@@ -23,6 +23,7 @@ Vagrant.configure(2) do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   config.vm.network "forwarded_port", guest: 8000, host: 8888
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -63,13 +64,14 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Adapted from: http://docs.geonode.org/en/latest/tutorials/devel/install_devmode/index.html#install-devmode
 
-    apt-get update
-    # Build tools and libraries
-    apt-get install -y build-essential libxml2-dev libxslt1-dev libpq-dev zlib1g-dev libgdal-dev
+    # Prevent apt-get steps from displaying interactive prompts
+    export DEBIAN_FRONTEND=noninteractive
 
-    # Python dependencies
-    apt-get install -y python-dev python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-pip python-software-properties python-gdal
-    pip install virtualenvwrapper
+    echo "deb http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
+    apt-get update
+
+    # Build tools and libraries
+    apt-get install -y build-essential libxml2-dev libxslt1-dev libpq-dev zlib1g-dev
 
     # Postgis
     touch /etc/apt/sources.list.d/pgdg.list
@@ -77,8 +79,14 @@ Vagrant.configure(2) do |config|
     wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
     apt-key add -
     apt-get update
-
     apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
+
+    # GDAL libraries from unstable repository
+    apt-get install -y libgdal1h libgdal-dev
+
+    # Python dependencies
+    apt-get install -y python-dev python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-pip python-software-properties python-gdal
+    pip install virtualenvwrapper
 
     # Java
     apt-get install -y --force-yes openjdk-6-jdk ant maven2 --no-install-recommends
