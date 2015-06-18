@@ -79,7 +79,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
  * Modify the IP addresses so we can see it from our host machine.
 
    * Edit the `pavement.py` file, around line 348 change the url to be `http://0.0.0.0:8080/geoserver/`
-   * Edit the `geonode/settings.py` file, around line 504 change `'LOCATION'` to `http://0.0.0.0:8080/geoserver/`.
+   * Edit the `geonode/settings.py` file, in the JSON data structure `OGC_SERVER: default:` change `'LOCATION'` to `http://0.0.0.0:8080/geoserver/`.
 
  * Run the server:
 
