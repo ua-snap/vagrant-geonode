@@ -9,7 +9,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
  * Postgres:
 
    ```
-   sudo passwd -u postgres # change password expiry infromation
+   sudo passwd -u postgres # change password expiry information
    sudo passwd postgres # change unix password for postgres
    su postgres
    psql
@@ -71,13 +71,15 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
  * Preparing to run the Geonode server:
 
    ```
+   cd geonode
    paver setup
+   paver sync
    ```
 
  * Modify the IP addresses so we can see it from our host machine.
 
    * Edit the `pavement.py` file, around line 348 change the url to be `http://0.0.0.0:8080/geoserver/`
-   * Edit the `geonode/settings.py` file, around line 504 change `'LOCATION'` to `http://0.0.0.0:8080/geoserver`.
+   * Edit the `geonode/settings.py` file, around line 504 change `'LOCATION'` to `http://0.0.0.0:8080/geoserver/`.
 
  * Run the server:
 
