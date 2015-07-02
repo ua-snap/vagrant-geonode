@@ -81,6 +81,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    * Edit the `pavement.py` file, around line 348 change the url to be `http://0.0.0.0:8080/geoserver/`
    * Edit the `geonode/settings.py` file, in the JSON data structure `OGC_SERVER: default:` change `'LOCATION'` to `http://0.0.0.0:8080/geoserver/`.
 
+
  * Run the server:
 
    ```
@@ -88,3 +89,32 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    ```
 
 GeoNode should be available on your host machine at `http://localhost:8888`.
+
+### Add MapLoom
+
+1. Install the `django-maploom` into the `geonode` virtual environment:
+
+   ```
+   workon geonode
+   pip install django-maploom
+   ```   
+
+1. Edit `geonode/geonode/settings.py`, adding `maploom` to `INSTALLED_APPS` like this:
+
+   ```
+   INSTALLED_APPS = (
+     ...
+     'maploom',
+   ) + GEONODE_APPS
+   ```
+
+1. Edit `geonode/geonode/urls.py`, adding the following lines:
+
+   ```
+   from maploom.geonode.urls import urlpatterns as maploom_urls
+
+   # After the section where urlpatterns is declared
+   urlpatterns += maploom_urls
+   ```
+
+This is all it takes for MapLoom to **almost** work right, except that because GeoServer requests are not proxied through the same port as GeoNode, your web browser will report same-origin-policy errors when you try to create or view a map. Before we can put this into production, we will need to set up the Apache infrastructure to proxy GeoServer requests over the same port. However, during the early stages of development, we can get by with simple disabling the same-origin-policy of our browsers. I did this successfully in Chrome using the [Allow-Control-Allow-Origin: * Chrome extension](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en) and MapLoom worked.
