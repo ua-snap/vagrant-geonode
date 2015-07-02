@@ -95,7 +95,6 @@ Vagrant.configure(2) do |config|
     apt-get install -y git gettext
 
     # Nodejs for client build tools
-    apt-get install curl build-essential
     curl -sL https://deb.nodesource.com/setup | bash -
     apt-get install -y nodejs
     npm install -y -g bower
