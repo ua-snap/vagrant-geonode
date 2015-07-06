@@ -96,7 +96,8 @@ GeoNode should be available on your host machine at `http://localhost:8888`.
 
    ```
    workon geonode
-   pip install django-maploom
+   git clone https://github.com/ROGUE-JCTD/django-maploom.git
+   pip install -e django-maploom
    ```   
 
 1. Edit `geonode/geonode/settings.py`, adding `maploom` to `INSTALLED_APPS` like this:
