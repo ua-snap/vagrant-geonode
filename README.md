@@ -2,7 +2,7 @@
 
 This repo contains notes and utilities for setting up GeoNode for our development environment.
 
-## Setup
+## Development setup
 
 Clone this repo, `vagrant up`, and when that finishes there are some manual steps to be done, [adapted from this site](http://docs.geonode.org/en/latest/tutorials/devel/install_devmode/index.html#install-devmode).  `vagrant ssh` into the box, then:
 
@@ -95,6 +95,7 @@ GeoNode should be available on your host machine at `http://localhost:8888`.
 1. Install the `django-maploom` into the `geonode` virtual environment:
 
    ```
+   cd ~/geonode
    workon geonode
    git clone https://github.com/ROGUE-JCTD/django-maploom.git
    pip install -e django-maploom
@@ -118,4 +119,186 @@ GeoNode should be available on your host machine at `http://localhost:8888`.
    urlpatterns += maploom_urls
    ```
 
-This is all it takes for MapLoom to **almost** work right, except that because GeoServer requests are not proxied through the same port as GeoNode, your web browser will report same-origin-policy errors when you try to create or view a map. Before we can put this into production, we will need to set up the Apache infrastructure to proxy GeoServer requests over the same port. However, during the early stages of development, we can get by with simple disabling the same-origin-policy of our browsers. I did this successfully in Chrome using the [Allow-Control-Allow-Origin: * Chrome extension](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en) and MapLoom worked.
+This is all it takes for MapLoom to **almost** work right, except that because GeoServer requests are not proxied through the same port as GeoNode, your web browser will report same-origin-policy errors when you try to create or view a map. A quick fix for a development environment is to simply disable the same-origin-policy on your browser. This can be done in Chrome using the [Allow-Control-Allow-Origin: * extension](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en). The proper fix for a production environment is to proxy GeoServer requests through the same port as GeoNode via Apache, which is described in the production setup instructions below.
+
+## Production setup
+
+These instructions assume you have already set up a GeoNode development environment by following the instructions above. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, additions for MapLoom support, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
+
+Once you complete the production setup instructions, it will not be easy to go back to the development setup due to port, permission, and database changes. In the future we might be able to make it easier to switch between the two, but for now, if you need Paver's debugging information for development, stick with the development setup and bypassing the same-origin-policy in your browser.
+
+1. Run the following commands to set up a PostGIS database to be used in place of the development SQLite database:
+
+   ```
+   sudo -u postgres createdb -O geonode geonode_data
+   sudo su postgres
+   psql -d geonode_data -c 'CREATE EXTENSION postgis;'
+   psql -d geonode_data -c 'GRANT ALL ON geometry_columns TO PUBLIC;'
+   psql -d geonode_data -c 'GRANT ALL ON spatial_ref_sys TO PUBLIC;'
+   exit
+   ```
+1. Edit `/etc/postgresql/9.4/main/pg_hba.conf`.
+
+   Change this line:
+
+   ```
+   local   all         all        peer
+   ```
+
+   To:
+
+   ```
+   local   all         all        md5
+   ```
+
+   And add this line to the bottom of the file:
+
+   ```
+   host    geonode     geonode    127.0.0.1/32    md5
+   ```
+
+1. Create a `local_settings.py` file:
+
+   ```
+   cd ~/geonode/geonode
+   cp local_settings.py.sample local_settings.py
+   ```
+
+1. Edit `~/geonode/geonode/local_settings.py`.
+
+   Add the following two lines to the top of the file:
+
+   ```
+   import os
+   from settings import PROJECT_ROOT
+   ```
+
+   Change this:
+
+   ```
+   'datastore' : {
+     #'ENGINE': 'django.contrib.gis.db.backends.postgis',
+     'ENGINE': '', # Empty ENGINE name disables
+     'NAME': 'geonode',
+     ...
+   }
+   ```
+
+   To:
+
+   ```
+   'datastore' : {
+     'ENGINE': 'django.contrib.gis.db.backends.postgis',
+     'NAME': 'geonode_data',
+     ...
+   }
+   ```
+
+   And add this to the bottom of the file:
+
+   ```
+   ALLOWED_HOST = ['localhost']
+   ```
+
+1. Perform the following Django setup steps to sync the database, set up a superuser account, etc.:
+
+   ```
+   cd ~/geonode
+   workon geonode
+   pip install psycopg2
+   python manage.py syncdb --noinput
+   python manage.py createsuperuser
+   python manage.py collectstatic
+   ```
+
+1. Create a `/etc/apache2/sites-available/geonode.conf` Apache configuration file with the following contents:
+
+   ```
+   WSGIDaemonProcess geonode python-path=/home/vagrant/geonode:/home/vagrant/.venvs/geonode/lib/python2.7/site-packages user=www-data threads=15 processes=2
+
+   <VirtualHost *:80>
+     ServerName http://localhost
+     ServerAdmin webmaster@localhost
+     DocumentRoot /home/vagrant/geonode/geonode
+
+     ErrorLog /var/log/apache2/error.log
+     LogLevel warn
+     CustomLog /var/log/apache2/access.log combined
+
+     WSGIProcessGroup geonode
+     WSGIPassAuthorization On
+     WSGIScriptAlias / /home/vagrant/geonode/geonode/wsgi.py
+
+     <Directory "/home/vagrant/geonode/geonode/">
+       Require all granted
+       Options Indexes FollowSymLinks
+       IndexOptions FancyIndexing
+     </Directory>
+
+     Alias /static/ /home/vagrant/geonode/geonode/static_root/
+     Alias /uploaded/ /home/vagrant/geonode/geonode/uploaded/
+
+     <Proxy *>
+       Order allow,deny
+       Allow from all
+     </Proxy>
+
+     ProxyPreserveHost On
+     ProxyPass /geoserver http://localhost:8080/geoserver
+     ProxyPassReverse /geoserver http://localhost:8080/geoserver
+   </VirtualHost>
+   ```
+
+1. Setup the Apache environment by running the following commands:
+
+   ```
+   sudo a2dissite 000-default
+   sudo a2ensite geonode
+   sudo a2enmod proxy_http
+   sudo mkdir -p /home/vagrant/geonode/geonode/uploaded
+   sudo chown www-data -R /home/vagrant/geonode/geonode/uploaded
+   sudo chown www-data:www-data /home/vagrant/geonode/geonode/static/
+   sudo chown www-data:www-data /home/vagrant/geonode/geonode/uploaded/
+   sudo chown www-data:www-data /home/vagrant/geonode/geonode/static_root/
+   sudo service apache2 reload
+   ```
+
+1. Copy the GeoServer webapp into Tomcat's webapp directory:
+
+   ```
+   sudo cp ~/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
+   sudo service tomcat7 restart
+   ```
+
+1. Edit `~/geonode/geoserver/geoserver/WEB-INF/web.xml`.
+
+   Add the following:
+
+   ```
+   <context-param>
+     <param-name>GEONODE_BASE_URL</param-name>
+     <param-value>http://localhost/</param-value>
+   </context-param>
+   ```
+
+1. Edit `~/geonode/geoserver/data/security/auth/geonodeAuthProvider/config.xml`.
+
+   Change this line:
+
+   ```
+   <baseUrl>http://localhost:8000/</baseUrl>
+   ```
+
+   To:
+
+   ```
+   <baseUrl>http://localhost/</baseUrl>
+   ```
+
+1. Copy MapLoom's static files into the new `static_root` directory, as Apache's new alias for /static breaks this otherwise:
+
+   ```
+   cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
+   ```
+
+1. Make GeoNode use the new Apache proxy for GeoServer requests by removing every reference to port 8080 in `~/geonode/geonode/local_settings.py`, so these requests load over port 80 instead. This appears not to be necessary for GeoNode by itself, but is necessary when using MapLoom.
