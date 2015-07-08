@@ -82,9 +82,10 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    * Edit the `geonode/settings.py` file, in the JSON data structure `OGC_SERVER: default:` change `'LOCATION'` to `http://0.0.0.0:8080/geoserver/`.
 
 
- * Run the server:
+ * Stop Tomcat to free up port 8080 for GeoServer, then run GeoNode and GeoServer:
 
    ```
+   sudo service tomcat7 stop
    paver start_geoserver && paver start_django -b 0.0.0.0:8000
    ```
 
