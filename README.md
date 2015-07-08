@@ -96,7 +96,7 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
 1. Install the `django-maploom` into the `geonode` virtual environment:
 
    ```
-   cd ~/geonode
+   cd ~
    workon geonode
    git clone https://github.com/ROGUE-JCTD/django-maploom.git
    pip install -e django-maploom
@@ -164,6 +164,12 @@ Once you complete the production setup instructions, it will not be easy to go b
 
    ```
    host    geonode     geonode    127.0.0.1/32    md5
+   ```
+
+1. Restart the PostgreSQL server:
+
+   ```
+   sudo service postgresql restart
    ```
 
 1. Create a `local_settings.py` file:
@@ -274,7 +280,7 @@ Once you complete the production setup instructions, it will not be easy to go b
 
 1. Edit `~/geonode/geoserver/geoserver/WEB-INF/web.xml`.
 
-   Add the following:
+   Add the following alongside the other `<context-param>` elements:
 
    ```
    <context-param>
