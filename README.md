@@ -102,7 +102,7 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
    pip install -e django-maploom
    ```   
 
-1. Edit `geonode/geonode/settings.py`, adding `maploom` to `INSTALLED_APPS` like this:
+1. Edit `~/geonode/geonode/settings.py`, adding `maploom` to `INSTALLED_APPS` like this:
 
    ```
    INSTALLED_APPS = (
@@ -111,13 +111,21 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
    ) + GEONODE_APPS
    ```
 
-1. Edit `geonode/geonode/urls.py`, adding the following lines:
+1. Edit `~/geonode/geonode/urls.py`, adding the following lines:
 
    ```
    from maploom.geonode.urls import urlpatterns as maploom_urls
 
    # After the section where urlpatterns is declared
    urlpatterns += maploom_urls
+   ```
+
+1. Restart Paver if it's not already running:
+
+   ```
+   cd ~/geonode
+   paver stop
+   paver start_geoserver && paver start_django -b 0.0.0.0:8000
    ```
 
 This is all it takes for MapLoom to **almost** work right, except that because GeoServer requests are not proxied through the same port as GeoNode, your web browser will report same-origin-policy errors when you try to create or view a map. A quick fix for a development environment is to simply disable the same-origin-policy on your browser. This can be done in Chrome using the [Allow-Control-Allow-Origin: * extension](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en). The proper fix for a production environment is to proxy GeoServer requests through the same port as GeoNode via Apache, which is described in the production setup instructions below.
