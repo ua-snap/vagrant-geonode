@@ -22,7 +22,8 @@ Vagrant.configure(2) do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-  config.vm.network "forwarded_port", guest: 8000, host: 8888
+  config.vm.network "forwarded_port", guest: 80, host: 8888
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
   config.vm.network "forwarded_port", guest: 8080, host: 8080
 
   # Create a private network, which allows host-only access to the machine
@@ -67,40 +68,64 @@ Vagrant.configure(2) do |config|
     # Prevent apt-get steps from displaying interactive prompts
     export DEBIAN_FRONTEND=noninteractive
 
+    # Unstable apt-get repo
     echo "deb http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
-    apt-get update
 
-    # Build tools and libraries
-    apt-get install -y build-essential libxml2-dev libxslt1-dev libpq-dev zlib1g-dev
-
-    # Postgis
-    touch /etc/apt/sources.list.d/pgdg.list
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-    apt-key add -
-    apt-get update
-    apt-get install -y postgresql-9.3-postgis-2.1 postgresql-9.3-postgis-scripts
-
-    # GDAL libraries from unstable repository
-    apt-get install -y libgdal1h libgdal-dev
-
-    # Python dependencies
-    apt-get install -y python-dev python-imaging python-lxml python-pyproj python-shapely python-nose python-httplib2 python-pip python-software-properties python-gdal
-    pip install virtualenvwrapper
-
-    # Java
-    apt-get install -y --force-yes openjdk-6-jdk ant maven2 --no-install-recommends
-
-    # Supporting tools
-    apt-get install -y git gettext
-
-    # Nodejs for client build tools
+    # Node.js setup
     curl -sL https://deb.nodesource.com/setup | bash -
-    apt-get install -y nodejs
+
+    apt-get update
+    apt-get install -y                 \
+        ant                            \
+        apache2                        \
+        build-essential                \
+        gdal-bin                       \
+        gettext                        \
+        git                            \
+        libapache2-mod-wsgi            \
+        libgdal1h                      \
+        libgdal-dev                    \
+        libgeos-dev                    \
+        libjpeg-dev                    \
+        libpng-dev                     \
+        libpq-dev                      \
+        libproj-dev                    \
+        libxml2-dev                    \
+        libxslt1-dev                   \
+        libpq-dev                      \
+        maven2                         \
+        nodejs                         \
+        openjdk-7-jre                  \
+        patch                          \
+        postgresql                     \
+        postgis                        \
+        postgresql-contrib             \
+        python                         \
+        python-dev                     \
+        python-gdal                    \
+        python-httplib2                \
+        python-imaging                 \
+        python-lxml                    \
+        python-nose                    \
+        python-pastescript             \
+        python-pip                     \
+        python-psycopg2                \
+        python-pyproj                  \
+        python-shapely                 \
+        python-software-properties     \
+        python-support                 \
+        python-urlgrabber              \
+        python-virtualenv              \
+        tomcat7                        \
+        unzip                          \
+        zip                            \
+        zlib1g-dev
+
+    pip install virtualenvwrapper
     npm install -y -g bower
     npm install -y -g grunt-cli
 
-    # Core repo
+    # GeoNode GitHub repo
     git clone https://github.com/GeoNode/geonode.git
     chown -R vagrant:vagrant geonode
 
