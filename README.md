@@ -89,7 +89,7 @@ Clone this repo, `vagrant up`, and when that finishes there are some manual step
    paver start_geoserver && paver start_django -b 0.0.0.0:8000
    ```
 
-GeoNode should be available on your host machine at `http://localhost:8888`.
+GeoNode should be available on your host machine at `http://localhost:8000`.
 
 ### Add MapLoom
 
