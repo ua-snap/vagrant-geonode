@@ -249,7 +249,7 @@ Once you complete the production setup instructions, it will not be easy to go b
    </VirtualHost>
    ```
 
-1. Setup the Apache environment by running the following commands:
+1. Set up the Apache environment by running the following commands:
 
    ```
    sudo a2dissite 000-default
@@ -261,13 +261,6 @@ Once you complete the production setup instructions, it will not be easy to go b
    sudo chown www-data:www-data /home/vagrant/geonode/geonode/uploaded/
    sudo chown www-data:www-data /home/vagrant/geonode/geonode/static_root/
    sudo service apache2 reload
-   ```
-
-1. Copy the GeoServer webapp into Tomcat's webapp directory:
-
-   ```
-   sudo cp ~/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
-   sudo service tomcat7 restart
    ```
 
 1. Edit `~/geonode/geoserver/geoserver/WEB-INF/web.xml`.
@@ -293,6 +286,13 @@ Once you complete the production setup instructions, it will not be easy to go b
 
    ```
    <baseUrl>http://localhost/</baseUrl>
+   ```
+
+1. Copy the GeoServer webapp into Tomcat's webapp directory:
+
+   ```
+   sudo cp ~/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
+   sudo service tomcat7 restart
    ```
 
 1. Copy MapLoom's static files into the new `static_root` directory, as Apache's new alias for /static breaks this otherwise:
