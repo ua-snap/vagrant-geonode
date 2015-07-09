@@ -209,6 +209,28 @@ Once you complete the production setup instructions, it will not be easy to go b
    }
    ```
 
+   Change these URLs:
+
+   ```
+   OGC_SERVER = {
+     'default' : {
+       ...
+       'LOCATION' : 'http://localhost:8080/geoserver/',
+       'PUBLIC_LOCATION' : 'http://localhost:8080/geoserver/',
+       ...
+   ```
+
+   To the Apache port, which is port 80 on a production server (as shown here) or port 8888 if you are setting this up in Vagrant:
+
+   ```
+   OGC_SERVER = {
+     'default' : {
+       ...
+       'LOCATION' : 'http://localhost/geoserver/',
+       'PUBLIC_LOCATION' : 'http://localhost/geoserver/',
+       ...
+   ```
+
    And add this to the bottom of the file:
 
    ```
@@ -315,5 +337,3 @@ Once you complete the production setup instructions, it will not be easy to go b
    ```
    cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
    ```
-
-1. Make GeoNode use the new Apache proxy for GeoServer requests by removing every reference to port 8080 in `~/geonode/geonode/local_settings.py`, so these requests load over port 80 instead. This appears not to be necessary for GeoNode by itself, but is necessary when using MapLoom.
