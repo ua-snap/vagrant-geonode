@@ -208,7 +208,7 @@ Once you complete the production setup instructions, it will not be easy to go b
    SITEURL = "http://localhost:8000/"
    ```
 
-   To port 80 for production (as shown here) or to port 8888 if this is inside of Vagrant:
+   To port 80, like this, even if you are using Vagrant:
 
    ```
    SITEURL = "http://localhost/"
@@ -361,6 +361,18 @@ Once you complete the production setup instructions, it will not be easy to go b
 
    ```
    cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
+   ```
+
+1. If you are setting this up inside of Vagrant, you will need to create an SSH tunnel from port 8888 to port 80 inside of the Vagrant host. First, set a password for the `vagrant` user so you can log in over SSH:
+
+   ```
+   sudo passwd vagrant
+   ```
+
+   Then set up the SSH tunnel:
+
+   ```
+   ssh -f -N -q -L 8888:localhost:80 localhost &
    ```
 
 1. Everything should now be working. If this was performed on a real server, load the GeoNode website over port 80. If this was performed in a Vagrant host, load the GeoNode website at http://localhost:8888 on the host machine.
