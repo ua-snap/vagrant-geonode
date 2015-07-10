@@ -105,7 +105,6 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
 
    ```
    cd ~
-   workon geonode
    git clone https://github.com/ROGUE-JCTD/django-maploom.git
    pip install -e django-maploom
    ```   
@@ -268,7 +267,6 @@ Once you complete the production setup instructions, it will not be easy to go b
 
    ```
    cd ~/geonode
-   workon geonode
    pip install psycopg2
    python manage.py syncdb --noinput
    python manage.py createsuperuser
