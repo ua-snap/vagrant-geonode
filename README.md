@@ -96,6 +96,7 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
 1. Make sure Paver is not running:
 
    ```
+   workon geonode
    cd ~/geonode
    paver stop
    ```
@@ -145,6 +146,7 @@ Once you complete the production setup instructions, it will not be easy to go b
 1. Make sure Paver is not running:
 
    ```
+   workon geonode
    cd ~/geonode
    paver stop
    ```
