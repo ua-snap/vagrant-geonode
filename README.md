@@ -93,6 +93,13 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
 
 ### Add MapLoom
 
+1. Make sure Paver is not running:
+
+   ```
+   cd ~/geonode
+   paver stop
+   ```
+
 1. Install the `django-maploom` into the `geonode` virtual environment:
 
    ```
@@ -124,7 +131,6 @@ GeoNode should be available on your host machine at `http://localhost:8000`.
 
    ```
    cd ~/geonode
-   paver stop
    paver start_geoserver && paver start_django -b 0.0.0.0:8000
    ```
 
@@ -135,6 +141,13 @@ This is all it takes for MapLoom to **almost** work right, except that because G
 These instructions assume you have already set up a GeoNode development environment by following the instructions above. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, additions for MapLoom support, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
 
 Once you complete the production setup instructions, it will not be easy to go back to the development setup due to port, permission, and database changes. In the future we might be able to make it easier to switch between the two, but for now, if you need Paver's debugging information for development, stick with the development setup and bypassing the same-origin-policy in your browser.
+
+1. Make sure Paver is not running:
+
+   ```
+   cd ~/geonode
+   paver stop
+   ```
 
 1. Run the following commands to set up a PostGIS database to be used in place of the development SQLite database:
 
@@ -186,6 +199,18 @@ Once you complete the production setup instructions, it will not be easy to go b
    ```
    import os
    from settings import PROJECT_ROOT
+   ```
+
+   Change this:
+
+   ```
+   SITEURL = "http://localhost:8000/"
+   ```
+
+   To port 80 for production (as shown here) or to port 8888 if this is inside of Vagrant:
+
+   ```
+   SITEURL = "http://localhost/"
    ```
 
    Change this:
@@ -337,3 +362,5 @@ Once you complete the production setup instructions, it will not be easy to go b
    ```
    cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
    ```
+
+1. Everything should now be working. If this was performed on a real server, load the GeoNode website over port 80. If this was performed in a Vagrant host, load the GeoNode website at http://localhost:8888 on the host machine.
