@@ -246,7 +246,7 @@ Once you complete the production setup instructions, it will not be easy to go b
        ...
    ```
 
-   To the Apache port, which is port 80 on a production server (as shown here) or port 8888 if you are setting this up in Vagrant:
+   To the Apache port, which is **port 80 on a production server** (as shown here) or **port 8888 if you are setting this up in Vagrant**:
 
    ```
    OGC_SERVER = {
@@ -372,7 +372,7 @@ Once you complete the production setup instructions, it will not be easy to go b
    Then set up the SSH tunnel:
 
    ```
-   ssh -f -N -q -L 8888:localhost:80 localhost &
+   ssh -f -N -q -L 8888:localhost:80 localhost
    ```
 
-1. Everything should now be working. If this was performed on a real server, load the GeoNode website over port 80. If this was performed in a Vagrant host, load the GeoNode website at http://localhost:8888 on the host machine.
+1. Everything should now be working. If this was performed on a real server, load the GeoNode website over port 80. If this was performed in a Vagrant host, load the GeoNode website at `http://localhost:8888` on the host machine.
