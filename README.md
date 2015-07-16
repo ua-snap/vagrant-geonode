@@ -138,27 +138,29 @@ This is all it takes for MapLoom to **almost** work right, except that because G
 
 ## Production setup
 
-These instructions assume you have already set up a GeoNode development environment by following the instructions above. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, additions for MapLoom support, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
+These instructions assume you have already set up a GeoNode development environment by following the instructions above as the user `geonode`. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, additions for MapLoom support, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
 
-Once you complete the production setup instructions, it will not be easy to go back to the development setup due to port, permission, and database changes. In the future we might be able to make it easier to switch between the two, but for now, if you need Paver's debugging information for development, stick with the development setup and bypassing the same-origin-policy in your browser.
+Once you complete the production setup instructions, it will not be easy to go back to the development setup due to port, permission, and database changes. If you need Paver's debugging information for development, stick with the development setup and bypassing the same-origin-policy in your browser.
 
 1. Make sure Paver is not running:
 
    ```
+   sudo su - geonode
    workon geonode
    cd ~/geonode
    paver stop
+   exit
    ```
 
 1. Run the following commands to set up a PostGIS database to be used in place of the development SQLite database:
 
    ```
-   sudo -u postgres createdb -O geonode geonode_data
-   sudo su postgres
+   sudo su - postgres
+   createdb -O geonode geonode_data
    psql -d geonode_data -c 'CREATE EXTENSION postgis;'
    psql -d geonode_data -c 'GRANT ALL ON geometry_columns TO PUBLIC;'
    psql -d geonode_data -c 'GRANT ALL ON spatial_ref_sys TO PUBLIC;'
-   exit
+   exit # exit postgres user account
    ```
 1. Edit `/etc/postgresql/9.4/main/pg_hba.conf`.
 
@@ -189,6 +191,7 @@ Once you complete the production setup instructions, it will not be easy to go b
 1. Create a `local_settings.py` file:
 
    ```
+   sudo su - geonode
    cd ~/geonode/geonode
    cp local_settings.py.sample local_settings.py
    ```
@@ -246,14 +249,14 @@ Once you complete the production setup instructions, it will not be easy to go b
        ...
    ```
 
-   To the Apache port, which is **port 80 on a production server** (as shown here) or **port 8888 if you are setting this up in Vagrant**:
+   To the public Apache proxy to GeoServer. For example:
 
    ```
    OGC_SERVER = {
      'default' : {
        ...
-       'LOCATION' : 'http://localhost/geoserver/',
-       'PUBLIC_LOCATION' : 'http://localhost/geoserver/',
+       'LOCATION' : 'http://<public domain>/geoserver/',
+       'PUBLIC_LOCATION' : 'http://<public domain>/geoserver/',
        ...
    ```
 
@@ -266,22 +269,24 @@ Once you complete the production setup instructions, it will not be easy to go b
 1. Perform the following Django setup steps to sync the database, set up a superuser account, etc.:
 
    ```
+   workon geonode
    cd ~/geonode
    pip install psycopg2
    python manage.py syncdb --noinput
    python manage.py createsuperuser
    python manage.py collectstatic
+   exit # exit geonode user account
    ```
 
 1. Create a `/etc/apache2/sites-available/geonode.conf` Apache configuration file with the following contents:
 
    ```
-   WSGIDaemonProcess geonode python-path=/home/vagrant/geonode:/home/vagrant/.venvs/geonode/lib/python2.7/site-packages user=www-data threads=15 processes=2
+   WSGIDaemonProcess geonode python-path=/home/geonode/geonode:/home/geonode/.venvs/geonode/lib/python2.7/site-packages user=www-data threads=15 processes=2
 
    <VirtualHost *:80>
      ServerName http://localhost
      ServerAdmin webmaster@localhost
-     DocumentRoot /home/vagrant/geonode/geonode
+     DocumentRoot /home/geonode/geonode/geonode
 
      ErrorLog /var/log/apache2/error.log
      LogLevel warn
@@ -289,16 +294,16 @@ Once you complete the production setup instructions, it will not be easy to go b
 
      WSGIProcessGroup geonode
      WSGIPassAuthorization On
-     WSGIScriptAlias / /home/vagrant/geonode/geonode/wsgi.py
+     WSGIScriptAlias / /home/geonode/geonode/geonode/wsgi.py
 
-     <Directory "/home/vagrant/geonode/geonode/">
+     <Directory "/home/geonode/geonode/geonode/">
        Require all granted
        Options Indexes FollowSymLinks
        IndexOptions FancyIndexing
      </Directory>
 
-     Alias /static/ /home/vagrant/geonode/geonode/static_root/
-     Alias /uploaded/ /home/vagrant/geonode/geonode/uploaded/
+     Alias /static/ /home/geonode/geonode/geonode/static_root/
+     Alias /uploaded/ /home/geonode/geonode/geonode/uploaded/
 
      <Proxy *>
        Order allow,deny
@@ -317,15 +322,15 @@ Once you complete the production setup instructions, it will not be easy to go b
    sudo a2dissite 000-default
    sudo a2ensite geonode
    sudo a2enmod proxy_http
-   sudo mkdir -p /home/vagrant/geonode/geonode/uploaded
-   sudo chown www-data -R /home/vagrant/geonode/geonode/uploaded
-   sudo chown www-data:www-data /home/vagrant/geonode/geonode/static/
-   sudo chown www-data:www-data /home/vagrant/geonode/geonode/uploaded/
-   sudo chown www-data:www-data /home/vagrant/geonode/geonode/static_root/
+   sudo mkdir -p /home/geonode/geonode/geonode/uploaded
+   sudo chown www-data -R /home/geonode/geonode/geonode/uploaded
+   sudo chown www-data:www-data /home/geonode/geonode/geonode/static/
+   sudo chown www-data:www-data /home/geonode/geonode/geonode/uploaded/
+   sudo chown www-data:www-data /home/geonode/geonode/geonode/static_root/
    sudo service apache2 reload
    ```
 
-1. Edit `~/geonode/geoserver/geoserver/WEB-INF/web.xml`.
+1. Edit `/home/geonode/geonode/geoserver/geoserver/WEB-INF/web.xml`.
 
    Add the following alongside the other `<context-param>` elements:
 
@@ -336,7 +341,7 @@ Once you complete the production setup instructions, it will not be easy to go b
    </context-param>
    ```
 
-1. Edit `~/geonode/geoserver/data/security/auth/geonodeAuthProvider/config.xml`.
+1. Edit `/home/geonode/geonode/geoserver/data/security/auth/geonodeAuthProvider/config.xml`.
 
    Change this line:
 
@@ -350,29 +355,25 @@ Once you complete the production setup instructions, it will not be easy to go b
    <baseUrl>http://localhost/</baseUrl>
    ```
 
+1. Create `/usr/share/tomcat7/bin/setenv.sh` with the following contents to increase the JVM heap size for Tomcat:
+
+   ```
+   export JAVA_OPTS="-server -Xms1024m -Xmx4096m"
+   ```
+
 1. Copy the GeoServer webapp into Tomcat's webapp directory:
 
    ```
-   sudo cp ~/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
+   sudo cp /home/geonode/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
    sudo service tomcat7 restart
    ```
 
 1. Copy MapLoom's static files into the new `static_root` directory, as Apache's new alias for /static breaks this otherwise:
 
    ```
+   sudo su - geonode
    cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
+   exit
    ```
 
-1. If you are setting this up inside of Vagrant, you will need to create an SSH tunnel from port 8888 to port 80 inside of the Vagrant host. First, set a password for the `vagrant` user so you can log in over SSH:
-
-   ```
-   sudo passwd vagrant
-   ```
-
-   Then set up the SSH tunnel:
-
-   ```
-   ssh -f -N -q -L 8888:localhost:80 localhost
-   ```
-
-1. Everything should now be working. If this was performed on a real server, load the GeoNode website over port 80. If this was performed in a Vagrant host, load the GeoNode website at `http://localhost:8888` on the host machine.
+1. Visit `http://<public domain>/` in your browser. Everything should now be working.
