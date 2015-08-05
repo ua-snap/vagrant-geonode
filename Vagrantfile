@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "puppetlabs/debian-7.8-64-puppet"
+  config.vm.box = "puppetlabs/ubuntu-14.04-64-puppet"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -67,9 +67,6 @@ Vagrant.configure(2) do |config|
 
     # Prevent apt-get steps from displaying interactive prompts
     export DEBIAN_FRONTEND=noninteractive
-
-    # Unstable apt-get repo
-    echo "deb http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
 
     # Node.js setup
     curl -sL https://deb.nodesource.com/setup | bash -
