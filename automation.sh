@@ -79,9 +79,11 @@ echo "export WORKON_HOME=~/.venvs" >> ~/.bashrc
 echo "source /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
 echo "export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads" >> ~/.bashrc
 
-source ~/.bashrc
-
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
+export WORKON_HOME=$HOME/.venvs
 source `which virtualenvwrapper.sh`
+export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads
+
 mkvirtualenv geonode
 workon geonode
 pip install -e geonode
@@ -117,3 +119,6 @@ echo "from maploom.geonode.urls import urlpatterns as maploom_urls
 
 # After the section where urlpatterns is declared
 urlpatterns += maploom_urls" >> geonode/geonode/urls.py
+
+cd geonode
+paver start_geoserver && paver start_django -b 0.0.0.0:8000
