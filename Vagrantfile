@@ -29,6 +29,7 @@ Vagrant.configure(2) do |config|
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   # config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.synced_folder "provision", "/home/vagrant/provision"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -39,7 +40,6 @@ Vagrant.configure(2) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -62,69 +62,5 @@ Vagrant.configure(2) do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
-    # Adapted from: http://docs.geonode.org/en/latest/tutorials/devel/install_devmode/index.html#install-devmode
-
-    # Prevent apt-get steps from displaying interactive prompts
-    export DEBIAN_FRONTEND=noninteractive
-
-    # Node.js setup
-    curl -sL https://deb.nodesource.com/setup | bash -
-
-    apt-get update
-    apt-get install -y                 \
-        ant                            \
-        apache2                        \
-        build-essential                \
-        gdal-bin                       \
-        gettext                        \
-        git                            \
-        libapache2-mod-wsgi            \
-        libgdal1h                      \
-        libgdal-dev                    \
-        libgeos-dev                    \
-        libjpeg-dev                    \
-        libpng-dev                     \
-        libpq-dev                      \
-        libproj-dev                    \
-        libxml2-dev                    \
-        libxslt1-dev                   \
-        libpq-dev                      \
-        maven2                         \
-        nodejs                         \
-        openjdk-7-jre                  \
-        patch                          \
-        postgresql                     \
-        postgis                        \
-        postgresql-contrib             \
-        python                         \
-        python-dev                     \
-        python-gdal                    \
-        python-httplib2                \
-        python-imaging                 \
-        python-lxml                    \
-        python-nose                    \
-        python-pastescript             \
-        python-pip                     \
-        python-psycopg2                \
-        python-pyproj                  \
-        python-shapely                 \
-        python-software-properties     \
-        python-support                 \
-        python-urlgrabber              \
-        python-virtualenv              \
-        tomcat7                        \
-        unzip                          \
-        zip                            \
-        zlib1g-dev
-
-    pip install virtualenvwrapper
-    npm install -y -g bower
-    npm install -y -g grunt-cli
-
-    # GeoNode GitHub repo
-    git clone https://github.com/GeoNode/geonode.git
-    chown -R vagrant:vagrant geonode
-
-  SHELL
+  #config.vm.provision "shell", path: "automation.sh", privileged: false
 end
