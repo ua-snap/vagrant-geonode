@@ -109,7 +109,8 @@ paver sync
 sudo service tomcat7 stop
 
 cd ..
-git clone https://github.com/ROGUE-JCTD/django-maploom.git
+#git clone https://github.com/ROGUE-JCTD/django-maploom.git
+git clone https://github.com/ua-snap/MapLoom.git
 pip install -e django-maploom
 
 sed -e "s/) + GEONODE_APPS/'maploom',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
