@@ -1,12 +1,13 @@
 #! /bin/bash
+# This script is designed to install GeoNode with the MapLoom extension that has
+# been forked by the Univsity of Alaska Fairbanks group Scenarios Network for 
+# Alaska and Arctic Planning (SNAP). By running this script on an Ubuntu 14.04
+# system will result in a working GeoNode instance on the localhost port 8000. This
+# is useful for development inside of a Vagrant instance that can provision the
+# development host using this script. 
 
-# Change this to match a user to install Geonode and Maploom
-#USER='vagrant'
-
-# Full path to geonode-maploom-install.sh script
-#SCRIPT=/home/vagrant/provision/geonode-maploom-install.sh
-
-whoami
+# User running this script. Must be a user with sudo to root.
+USER=`whoami`
 
 # Prevent apt-get steps from displaying interactive prompts
 export DEBIAN_FRONTEND=noninteractive
@@ -132,10 +133,13 @@ cd ..
 git clone https://github.com/ROGUE-JCTD/django-maploom.git
 pip install -e django-maploom
 
+# Chown the .npm directory to the user currently running this script
+sudo chown -R $USER ~/.npm/
+
 # Clone and make the MapLoom JS file from our local fork of the MapLoom repository
 git clone https://github.com/ua-snap/MapLoom.git
 cd MapLoom
-sudo npm install && bower install && grunt
+npm install && bower install && grunt
 cp -f bin/assets/MapLoom-1.2.0.js ../django-maploom/maploom/static/maploom/assets/MapLoom-1.2.js
 cd ..
 
