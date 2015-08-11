@@ -9,6 +9,10 @@
 # User running this script. Must be a user with sudo to root.
 USER=`whoami`
 
+# Where should the source code be installed. Important for development environment as we want to use our
+# preferred IDEs to edit code.
+INSTALL_DIR='/install'
+
 # Prevent apt-get steps from displaying interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
@@ -60,6 +64,7 @@ sudo apt-get install -y            \
     python-virtualenv              \
     tomcat7                        \
     unzip                          \
+    vim                            \
     zip                            \
     zlib1g-dev
 
@@ -67,7 +72,7 @@ sudo pip install virtualenvwrapper
 sudo npm install -y -g bower
 sudo npm install -y -g grunt-cli
 
-cd ~
+cd $INSTALL_DIR
 
 # GeoNode GitHub repo
 git clone https://github.com/GeoNode/geonode.git
@@ -76,6 +81,9 @@ git clone https://github.com/GeoNode/geonode.git
 sudo -u postgres psql -c "CREATE USER geonode WITH PASSWORD 'geonode'"
 sudo -u postgres psql -c "CREATE DATABASE geonode"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE geonode to geonode"
+
+# Set alias for VI to VIM
+echo "alias vi='vim'"
 
 # Set virtual environment variables in BASHRC for user running this script
 echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python" >> ~/.bashrc
