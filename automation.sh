@@ -11,7 +11,7 @@ USER=`whoami`
 
 # Where should the source code be installed. Important for development environment as we want to use our
 # preferred IDEs to edit code.
-INSTALL_DIR='/install'
+INSTALL_DIR='/install/portal'
 
 # Prevent apt-get steps from displaying interactive prompts
 export DEBIAN_FRONTEND=noninteractive
@@ -72,6 +72,8 @@ sudo pip install virtualenvwrapper
 sudo npm install -y -g bower
 sudo npm install -y -g grunt-cli
 
+sudo mkdir -p $INSTALL_DIR
+sudo chown $USER $INSTALL_DIR
 cd $INSTALL_DIR
 
 # GeoNode GitHub repo
