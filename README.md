@@ -377,3 +377,29 @@ Once you complete the production setup instructions, it will not be easy to go b
    ```
 
 1. Visit `http://<public domain>/` in your browser. Everything should now be working.
+
+## Creating and Restoring from Backups
+
+This section can be used to either create a backup of GeoNode and GeoServer from a production or development environment and restoring this backup on either a development or production environment.
+
+### Create a backup
+
+1. While on the development or production server, run the following command in the directory where you want to keep the backup.
+
+   ```
+   bash <path_to_backup.sh>
+   On Vagrant VM: bash /install/backup.sh
+   ```
+
+   This will result in a backup file which you can use to restore from in the next section.
+
+### Restore from a backup
+
+1. While on the development or production server that you want to restore on, run the following command in a directory you have write privileges to:
+
+   ```
+   bash <path-to-restore.sh> <full-path-to-backup.tgz>
+   An example on Vagrant VM: bash /install/restore.sh /install/backup-08-13-2015.tgz
+   ```
+
+   This will take a minute or so, but will result in a copy of the PostGIS database, GeoNode uploaded layers, and GeoServer layers that are queried by GeoNode.
