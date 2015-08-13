@@ -16,6 +16,12 @@ INSTALL_DIR='/install/portal'
 # Prevent apt-get steps from displaying interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
+# Delete old INSTALL_DIR if present
+if [ -d $INSTALL_DIR ]; then
+  echo "Removing old geonode installation for fresh provisioning."
+  rm -rf $INSTALL_DIR
+fi
+
 # Node.js setup
 sudo sh -c 'curl -sL https://deb.nodesource.com/setup | bash -'
 
@@ -44,7 +50,7 @@ sudo apt-get install -y            \
     openjdk-7-jre                  \
     patch                          \
     postgresql                     \
-    postgis                        \
+    postgis*                       \
     postgresql-contrib             \
     python                         \
     python-dev                     \
@@ -72,6 +78,7 @@ sudo pip install virtualenvwrapper
 sudo npm install -y -g bower
 sudo npm install -y -g grunt-cli
 
+# Ensure that the INSTALL_DIR is created and owned by the user running the script
 sudo mkdir -p $INSTALL_DIR
 sudo chown $USER $INSTALL_DIR
 cd $INSTALL_DIR
@@ -79,19 +86,32 @@ cd $INSTALL_DIR
 # GeoNode GitHub repo
 git clone https://github.com/GeoNode/geonode.git
 
-# Create geonode user and database in PSQL
+# Create geonode user and databases in PSQL
 sudo -u postgres psql -c "CREATE USER geonode WITH PASSWORD 'geonode'"
 sudo -u postgres psql -c "CREATE DATABASE geonode"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE geonode to geonode"
+sudo -u postgres createdb -O geonode geonode_data
+sudo -u postgres psql -d geonode_data -c 'CREATE EXTENSION postgis;'
+sudo -u postgres psql -d geonode_data -c 'GRANT ALL ON geometry_columns TO PUBLIC;'
+sudo -u postgres psql -d geonode_data -c 'GRANT ALL ON spatial_ref_sys TO PUBLIC;'
+
+# Replace a line in the pg_hba.conf file for Postgres
+sudo sh -c "sed -e 's/local   all             all                                     peer/local   all             all                                     md5/' < /etc/postgresql/9.3/main/pg_hba.conf > /etc/postgresql/9.3/main/pg_hba.conf.tmp"
+sudo mv /etc/postgresql/9.3/main/pg_hba.conf.tmp /etc/postgresql/9.3/main/pg_hba.conf
+sudo service postgresql restart
+
+# Add the modified local_settings.py file in GeoNode
+cp $INSTALL_DIR/../local_settings.py $INSTALL_DIR/geonode/geonode/local_settings.py
 
 # Set alias for VI to VIM
-echo "alias vi='vim'"
+echo "alias vi='vim'" >> ~/.bashrc
 
 # Set virtual environment variables in BASHRC for user running this script
 echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python" >> ~/.bashrc
 echo "export WORKON_HOME=~/.venvs" >> ~/.bashrc
 echo "source /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
 echo "export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads" >> ~/.bashrc
+echo "export INSTALL_DIR=$INSTALL_DIR" >> ~/.bashrc
 
 # Sourcing these from the BASHRC was not working in the script. Explicitly,
 # setting these from the BASHRC for immediate usage.
@@ -137,6 +157,7 @@ paver sync
 
 # Turn of Tomcat since it is unnecessary for running GeoNode / GeoServer
 sudo service tomcat7 stop
+sudo update-rc.d tomcat7 disable
 
 # Clone and install the django-maploom Python package
 cd ..
@@ -163,6 +184,12 @@ echo "from maploom.geonode.urls import urlpatterns as maploom_urls
 # After the section where urlpatterns is declared
 urlpatterns += maploom_urls" >> geonode/geonode/urls.py
 
-# Start GeoServer and Django for GeoNode
+# Configure PostGIS as the GeoNode backend
 cd geonode
+pip install psycopg2
+python manage.py syncdb --noinput
+python manage.py createsuperuser --username=admin --password=admin --email=ad@m.in
+python manage.py collectstatic --noinput
+
+# Start GeoServer and Django for GeoNode
 paver start_geoserver && paver start_django -b 0.0.0.0:8000
