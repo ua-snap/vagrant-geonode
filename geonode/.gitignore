@@ -4,3 +4,4 @@
 !.gitignore
 !backup.sh
 !restore.sh
+!local_settings.py
