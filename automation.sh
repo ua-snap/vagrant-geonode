@@ -205,3 +205,13 @@ python manage.py collectstatic --noinput
 
 # Start GeoServer and Django for GeoNode
 paver start_geoserver && paver start_django -b 0.0.0.0:8000
+
+echo
+echo "A new admin user account has been created but requires a password to be used on the website."
+echo "Please do the following manual steps: "
+echo "1. vagrant ssh "
+echo "2. workon geonode "
+echo "3. cd $INSTALL_DIR/geonode "
+echo "4. python manage.py changepassword admin "
+echo
+echo "Build of GeoNode finished."
