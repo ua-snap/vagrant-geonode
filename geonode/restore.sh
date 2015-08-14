@@ -13,12 +13,12 @@ if [ $# -eq 0 ]; then
 else
 
   # This generates the basename of the gzipper tar file
-  BACKUP_NAME=`echo "$1" | cut -d'.' -f1`
+  BACKUP_NAME=`basename "$1" | cut -d'.' -f1`
 
   # Unzip and untar the backup directory
-  echo
+  echo 
   echo "Untarring backup..."
-  tar zxf $1 > /dev/null 2>&1
+  tar zxf $1 -C $PWD > /dev/null 2>&1
 
   # Descend into the backup
   cd $BACKUP_NAME

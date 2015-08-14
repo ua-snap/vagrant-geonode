@@ -174,21 +174,33 @@ npm install && bower install && grunt
 cp -f bin/assets/MapLoom-1.2.0.js ../django-maploom/maploom/static/maploom/assets/MapLoom-1.2.js
 cd ..
 
-# Add maploom as a GeoNode app to settings.py
-sed -e "s/) + GEONODE_APPS/'maploom',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
+# Clone and install the SNAP Arctic Portal Git Repository
+git clone https://github.com/ua-snap/snap-arctic-portal.git
+cd snap-arctic-portal
+git checkout snapmapapp
+cd ..
+pip install -e snap-arctic-portal
+
+# Add maploom and snapmapapp as GeoNode apps to settings.py
+sed -e "s/) + GEONODE_APPS/'maploom',\n'snapmapapp',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
 mv geonode/geonode/settings2.py geonode/geonode/settings.py
 
 # Add the maploom_urls to the list of urlpatterns in urls.py
+# Also, make the snapmapapp_urls first sequentially in the urlpatterns list
 echo "from maploom.geonode.urls import urlpatterns as maploom_urls
 
 # After the section where urlpatterns is declared
-urlpatterns += maploom_urls" >> geonode/geonode/urls.py
+urlpatterns += maploom_urls
+
+from snapmapapp.urls import urlpatterns as snapmapapp_urls
+tmp_urlpatterns = snapmapapp_urls + urlpatterns
+urlpatterns = tmp_urlpatterns" >> geonode/geonode/urls.py
 
 # Configure PostGIS as the GeoNode backend
 cd geonode
 pip install psycopg2
 python manage.py syncdb --noinput
-python manage.py createsuperuser --username=admin --password=admin --email=ad@m.in
+python manage.py createsuperuser --username=admin --email=ad@m.in --noinput
 python manage.py collectstatic --noinput
 
 # Start GeoServer and Django for GeoNode
