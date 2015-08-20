@@ -149,6 +149,11 @@ cd ..
 pip install -e GDAL-1.10.0
 rm GDAL-1.10.0.tar.gz
 
+# Increase JVM heap size for GeoServer when launched with Paver to boost
+# GeoServer performance, especially with raster overlays.
+sed -e "s/-Xmx512m/-Xmx4096m/" < geonode/pavement.py > geonode/pavement2.py
+mv geonode/pavement2.py geonode/pavement.py
+
 # Run paver setup and paver sync to get the paver start / stop commands for the 
 # GeoNode and GeoServer tools.
 cd geonode
