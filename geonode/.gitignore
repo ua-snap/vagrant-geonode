@@ -2,3 +2,7 @@
 *
 # Except this file
 !.gitignore
+!backup.sh
+!restore.sh
+!local_settings.py
+!update_geonode.sh
