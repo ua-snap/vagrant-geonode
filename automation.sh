@@ -84,7 +84,7 @@ sudo chown $USER $INSTALL_DIR
 cd $INSTALL_DIR
 
 # GeoNode GitHub repo
-git clone https://github.com/GeoNode/geonode.git
+git clone https://github.com/ua-snap/geonode.git
 
 # Create geonode user and databases in PSQL
 sudo -u postgres psql -c "CREATE USER geonode WITH PASSWORD 'geonode'"
