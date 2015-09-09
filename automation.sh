@@ -159,47 +159,22 @@ mv geonode/pavement2.py geonode/pavement.py
 cd geonode
 paver setup
 paver sync
+cd ..
 
 # Turn of Tomcat since it is unnecessary for running GeoNode / GeoServer
 sudo service tomcat7 stop
 sudo update-rc.d tomcat7 disable
 
-# Clone and install the django-maploom Python package
-cd ..
-git clone https://github.com/ROGUE-JCTD/django-maploom.git
-pip install -e django-maploom
-
 # Chown the .npm directory to the user currently running this script
 sudo chown -R $USER ~/.npm/
 
-# Clone and make the MapLoom JS file from our local fork of the MapLoom repository
-git clone https://github.com/ua-snap/MapLoom.git
-cd MapLoom
-npm install && bower install && grunt
-cp -f bin/assets/MapLoom-1.2.0.js ../django-maploom/maploom/static/maploom/assets/MapLoom-1.2.js
-cd ..
-
 # Clone and install the SNAP Arctic Portal Git Repository
 git clone https://github.com/ua-snap/snap-arctic-portal.git
-cd snap-arctic-portal
-git checkout snapmapapp
-cd ..
 pip install -e snap-arctic-portal
 
-# Add maploom and snapmapapp as GeoNode apps to settings.py
-sed -e "s/) + GEONODE_APPS/'maploom',\n'snapmapapp',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
+# Add snapmapapp as GeoNode apps to settings.py
+sed -e "s/) + GEONODE_APPS/'snapmapapp',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
 mv geonode/geonode/settings2.py geonode/geonode/settings.py
-
-# Add the maploom_urls to the list of urlpatterns in urls.py
-# Also, make the snapmapapp_urls first sequentially in the urlpatterns list
-echo "from maploom.geonode.urls import urlpatterns as maploom_urls
-
-# After the section where urlpatterns is declared
-urlpatterns += maploom_urls
-
-from snapmapapp.urls import urlpatterns as snapmapapp_urls
-tmp_urlpatterns = snapmapapp_urls + urlpatterns
-urlpatterns = tmp_urlpatterns" >> geonode/geonode/urls.py
 
 # Configure PostGIS as the GeoNode backend
 cd geonode
