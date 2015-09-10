@@ -18,9 +18,9 @@ After a restart of the VM, you will need to manually run the following commands 
 
 ## Production setup
 
-These instructions assume you have already set up a GeoNode development environment by following the instructions above as the user `geonode`. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, additions for MapLoom support, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
+These instructions assume you have already set up a GeoNode development environment by following the instructions above as the user `geonode`. They have been adapted from GeoNode's official [Custom Installation Guide](http://geonode.readthedocs.org/en/latest/tutorials/admin/install/custom_install.html) with many small fixes, clarifications, omissions to avoid redundancy with the rest of our infrastructure, and a few changes specifically for Debian.
 
-Once you complete the production setup instructions, it will not be easy to go back to the development setup due to port, permission, and database changes. If you need Paver's debugging information for development, stick with the development setup and bypassing the same-origin-policy in your browser.
+Once you complete the production setup instructions, it will not be easy to go back to the development setup. If you need Paver's debugging information for development, stick with the development setup.
 
 1. Make sure Paver is not running:
 
@@ -189,14 +189,6 @@ Once you complete the production setup instructions, it will not be easy to go b
    ```
    sudo cp /home/geonode/geonode/downloaded/geoserver.war /var/lib/tomcat7/webapps/
    sudo service tomcat7 restart
-   ```
-
-1. Copy MapLoom's static files into the new `static_root` directory, as Apache's new alias for /static breaks this otherwise:
-
-   ```
-   sudo su - geonode
-   cp -r ~/django-maploom/maploom/static/maploom ~/geonode/geonode/static_root/
-   exit
    ```
 
 1. Visit `http://<public domain>/` in your browser. Everything should now be working.
