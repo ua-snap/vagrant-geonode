@@ -5,6 +5,17 @@
 # directories in the GeoServer data directory. It finally gzips
 # the tar file of the created backup directory.
 
+# If $INSTALL_DIR is set we can assume we are in Vagrant, otherwise
+# we are on a production server that is serving GeoServer in a
+# different location with Apache Tomcat
+if [ $INSTALL_DIR ]; then
+  GEONODE_DIR=$INSTALL_DIR/geonode
+  GEOSERVER_DIR=$INSTALL_DIR/geonode/geoserver
+else
+  GEONODE_DIR=/home/geonode/geonode
+  GEOSERVER_DIR=/var/lib/tomcat7/webapps/geoserver
+fi
+
 # Name of the backup. Has date included in the backup name e.g.
 # backup-08-13-2015
 BACKUP_NAME="backup-$(date +%m-%d-%Y)"
@@ -18,10 +29,10 @@ echo "Creating backup in $BACKUP_NAME.tgz..."
 sudo -u postgres pg_dumpall > $BACKUP_NAME/geonode-backup.sql
 
 # Copy all uploaded geospatial layers and their thumbnails to backup
-cp -r $INSTALL_DIR/geonode/geonode/uploaded/ $BACKUP_NAME/
+cp -r $GEONODE_DIR/geonode/uploaded/ $BACKUP_NAME/
 
 # Copy all of the GeoServer data to the backup
-cp -r $INSTALL_DIR/geonode/geoserver/data $BACKUP_NAME/
+cp -r $GEOSERVER_DIR/data $BACKUP_NAME/
 
 # Tar and gzip the backup
 tar zcf $BACKUP_NAME.tgz $BACKUP_NAME

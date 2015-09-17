@@ -4,6 +4,10 @@
 # of the gzipped tar file path. Here is an example run of the
 # script: bash ./restore.sh /install/backup-08-13-2015.tgz
 
+if [ $INSTALL_DIR ]; then
+  VAGRANT=true
+fi
+
 # Process options
 while getopts ":p:fth" opt; do
   case $opt in
@@ -49,18 +53,24 @@ else
   cd $BACKUP_NAME
   
   if [ $PROD_DOMAIN ]; then
-    PROD_GEOSERVER="$PROD_DOMAIN/geoserver"
-    PROD_GEONODE="$PROD_DOMAIN/"
-    PROD_LOCALHOST="localhost/"
-    DEV_GEOSERVER="localhost:8080/geoserver"
-    DEV_GEONODE="localhost:8000/"
-    DEV_LOCALHOST="localhost:8000/"
+    PROD_GEOSERVER_URL="$PROD_DOMAIN/geoserver"
+    PROD_GEOSERVER_PATH="/var/lib/tomcat7/webapps/geoserver"
+    PROD_GEONODE=$PROD_DOMAIN
+    PROD_LOCALHOST="localhost"
 
-    # Escape slashes and dots in our replacement patterns
-    PROD_GEOSERVER=`echo $PROD_GEOSERVER | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    DEV_GEOSERVER_URL="localhost:8080/geoserver"
+    DEV_GEOSERVER_PATH="/install/portal/geonode/geoserver"
+    DEV_GEONODE="localhost:8000"
+    DEV_LOCALHOST="localhost:8000"
+
+    # Escape slashes and dots to prepare our replacement patterns for sed
+    PROD_GEOSERVER_URL=`echo $PROD_GEOSERVER_URL | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    PROD_GEOSERVER_PATH=`echo $PROD_GEOSERVER_PATH | perl -pe 's/(\.|\/)/\\\\$1/g'`
     PROD_GEONODE=`echo $PROD_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
     PROD_LOCALHOST=`echo $PROD_LOCALHOST | perl -pe 's/(\.|\/)/\\\\$1/g'`
-    DEV_GEOSERVER=`echo $DEV_GEOSERVER | perl -pe 's/(\.|\/)/\\\\$1/g'`
+
+    DEV_GEOSERVER_URL=`echo $DEV_GEOSERVER_URL | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    DEV_GEOSERVER_PATH=`echo $DEV_GEOSERVER_PATH | perl -pe 's/(\.|\/)/\\\\$1/g'`
     DEV_GEONODE=`echo $DEV_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
     DEV_LOCALHOST=`echo $DEV_LOCALHOST | perl -pe 's/(\.|\/)/\\\\$1/g'`
 
@@ -68,7 +78,8 @@ else
       echo
       echo "Restoring from $PROD_DOMAIN to development server."
       for FILE in `find . -type f`; do
-        sed -i "s/$PROD_GEOSERVER/$DEV_GEOSERVER/g" $FILE
+        sed -i "s/$PROD_GEOSERVER_URL/$DEV_GEOSERVER_URL/g" $FILE
+        sed -i "s/$PROD_GEOSERVER_PATH/$DEV_GEOSERVER_PATH/g" $FILE
         sed -i "s/$PROD_GEONODE/$DEV_GEONODE/g" $FILE
         sed -i "s/$PROD_LOCALHOST/$DEV_LOCALHOST/g" $FILE
       done
@@ -76,7 +87,8 @@ else
       echo
       echo "Restoring from development server to $PROD_DOMAIN."
       for FILE in `find . -type f`; do
-        sed -i "s/$DEV_GEOSERVER/$PROD_GEOSERVER/g" $FILE
+        sed -i "s/$DEV_GEOSERVER_URL/$PROD_GEOSERVER_URL/g" $FILE
+        sed -i "s/$DEV_GEOSERVER_PATH/$PROD_GEOSERVER_PATH/g" $FILE
         sed -i "s/$DEV_GEONODE/$PROD_GEONODE/g" $FILE
         sed -i "s/$DEV_LOCALHOST/$PROD_LOCALHOST/g" $FILE
       done
@@ -95,13 +107,24 @@ else
   # Copy the uploaded GeoNode data to GeoNode's installed directory
   echo
   echo "Moving GeoNode and GeoServer directories into place..."
-  rm -rf $INSTALL_DIR/geonode/geonode/uploaded
-  cp -r uploaded $INSTALL_DIR/geonode/geonode/
 
-  # Copy the GeoServer data directory to its required location
-  rm -rf $INSTALL_DIR/geonode/geoserver/data
-  cp -r data $INSTALL_DIR/geonode/geoserver/
-  
+  if [ $VAGRANT ]; then
+    rm -rf $INSTALL_DIR/geonode/geonode/uploaded
+    rm -rf $INSTALL_DIR/geonode/geoserver/data
+    cp -r uploaded $INSTALL_DIR/geonode/geonode/
+    cp -r data $INSTALL_DIR/geonode/geoserver/
+  else
+    GEONODE_DIR=/home/geonode/geonode/geonode
+    GEOSERVER_DIR=/var/lib/tomcat7/webapps/geoserver
+    sudo rm -rf $GEONODE_DIR/uploaded
+    sudo rm -rf $GEOSERVER_DIR/data
+    sudo cp -r uploaded $GEONODE_DIR/
+    sudo cp -r data $GEOSERVER_DIR/
+    sudo chown -R www-data:www-data $GEONODE_DIR/uploaded
+    sudo chown -R tomcat7:tomcat7 $GEOSERVER_DIR/data
+    find $GEOSERVER_DIR/data -type d -exec sudo chmod 775 '{}' +
+  fi
+
   # Remove the untarred backup
   cd ..
   rm -rf $BACKUP_NAME
@@ -112,18 +135,23 @@ else
   source `which virtualenvwrapper.sh`
   export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads
 
-  # Workon the geonode virtual environment
-  workon geonode
-
-  # Change directories to GeoNode
-  cd $INSTALL_DIR/geonode
-
   # Restart GeoServer and GeoNode for them to get latest changes
   echo
   echo "Restarting GeoNode and GeoServer..."
   echo "This can take a minute..."
-  paver stop > /dev/null 2>&1
-  paver start_geoserver > /dev/null 2>&1 && paver start_django -b 0.0.0.0:8000 > /dev/null 2>&1
+
+  if [ $VAGRANT ]; then
+    # Workon the geonode virtual environment
+    workon geonode
+
+    # Change directories to GeoNode
+    cd $GEONODE_DIR
+
+    paver stop > /dev/null 2>&1
+    paver start_geoserver > /dev/null 2>&1 && paver start_django -b 0.0.0.0:8000 > /dev/null 2>&1
+  else
+    sudo service tomcat7 restart
+  fi
 
   echo 
   echo "Backup restored."
