@@ -222,20 +222,18 @@ This section can be used to either create a backup of GeoNode and GeoServer from
 
    #### Production-to-development or development-to-production
 
-   You can also restore a production backup into a development environment (or vice versa) by providing options to the `restore.sh` script.
+   You can also restore a production backup into a development environment (or vice versa) by providing options to the `restore.sh` script. In the following usage cases, `<production-domain>` is always the domain of the public server (e.g., geonode.example.org) regardless of whether you are going production-to-development or development-to-production.
 
    To restore a backup from a production server into a development environment:
 
    ```
    bash <path-to-restore.sh> -p <production-domain> -f <full-path-to-backup.tgz>
-   Example: bash /install/restore.sh -p geonode.example.com -f /install/backup-08-13-2015.tgz
    ```
 
    To restore a backup from a development environment into a production server:
 
    ```
    bash <path-to-restore.sh> -p <production-domain> -t <full-path-to-backup.tgz>
-   Example: bash /install/restore.sh -p geonode.example.com -t /install/backup-08-13-2015.tgz
    ```
 
    Remember, the `-f` option means "from production" and the `-t` option means "to production".
