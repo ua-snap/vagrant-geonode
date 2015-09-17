@@ -6,3 +6,6 @@
 !restore.sh
 !local_settings.py
 !update_geonode.sh
+!NCEP/
+NCEP/*
+!NCEP/ncep_convert.sh
