@@ -50,11 +50,11 @@ else
   
   if [ $PROD_DOMAIN ]; then
     PROD_GEOSERVER="$PROD_DOMAIN/geoserver"
-    PROD_GEONODE=$PROD_DOMAIN
-    PROD_LOCALHOST="localhost"
+    PROD_GEONODE="$PROD_DOMAIN/"
+    PROD_LOCALHOST="localhost/"
     DEV_GEOSERVER="localhost:8080/geoserver"
-    DEV_GEONODE="localhost:8000"
-    DEV_LOCALHOST="localhost:8000"
+    DEV_GEONODE="localhost:8000/"
+    DEV_LOCALHOST="localhost:8000/"
 
     # Escape slashes and dots in our replacement patterns
     PROD_GEOSERVER=`echo $PROD_GEOSERVER | perl -pe 's/(\.|\/)/\\\\$1/g'`
