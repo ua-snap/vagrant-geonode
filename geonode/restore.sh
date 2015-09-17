@@ -4,14 +4,38 @@
 # of the gzipped tar file path. Here is an example run of the
 # script: bash ./restore.sh /install/backup-08-13-2015.tgz
 
-# Verify that an argument has been supplied to the restore script
-if [ $# -eq 0 ]; then
+# Process options
+while getopts ":p:fth" opt; do
+  case $opt in
+    p) PROD_DOMAIN=$OPTARG ;;
+    t) DEV_TO_PROD=true ;;
+    f) PROD_TO_DEV=true ;;
+    h) HELP=true ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ -n "$DEV_TO_PROD" -a -n "$PROD_TO_DEV" ]; then
+  echo "Error: You cannot set both the -t and -f flags."
+fi
+
+# Offset option index to first non-optional argument
+shift $((OPTIND-1))
+
+# Show help if requested or if a backup file has not been provided
+if [ -n "$HELP" -o $# -eq 0 ]; then
   echo
-  echo "No arguments supplied to script."
-  echo "Please provide the full path to a gzipped tar file containing a backup."
+  echo "Syntax: restore.sh [-p <production-domain>] [-t|-f] <backup-file>"
+  echo
+  echo "-p  <production-domain>  domain of the live server (e.g., geonode-test.iarc.uaf.edu)"
+  echo "-t  to production from development"
+  echo "-f  from production to development"
+  echo "<backup-file>  backup .tgz file created by backup.sh script"
   echo
 else
-
   # This generates the basename of the gzipper tar file
   BACKUP_NAME=`basename "$1" | cut -d'.' -f1`
 
@@ -23,6 +47,37 @@ else
   # Descend into the backup
   cd $BACKUP_NAME
   
+  if [ -n $PROD_DOMAIN ]; then
+    PROD_GEOSERVER="$PROD_DOMAIN/geoserver"
+    PROD_GEONODE=$PROD_DOMAIN
+    PROD_LOCALHOST="localhost"
+    DEV_GEOSERVER="localhost:8080/geoserver"
+    DEV_GEONODE="localhost:8000"
+    DEV_LOCALHOST="localhost:8000"
+
+    # Escape slashes and dots in our replacement patterns
+    PROD_GEOSERVER=`echo $PROD_GEOSERVER | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    PROD_GEONODE=`echo $PROD_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    PROD_LOCALHOST=`echo $PROD_LOCALHOST | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    DEV_GEOSERVER=`echo $DEV_GEOSERVER | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    DEV_GEONODE=`echo $DEV_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
+    DEV_LOCALHOST=`echo $DEV_LOCALHOST | perl -pe 's/(\.|\/)/\\\\$1/g'`
+
+    for FILE in `find . -type f`; do
+      if [ $PROD_TO_DEV ]; then
+        echo "Restoring from $PROD_DOMAIN to development server."
+        sed -i "s/$PROD_GEOSERVER/$DEV_GEOSERVER/g" $FILE
+        sed -i "s/$PROD_GEONODE/$DEV_GEONODE/g" $FILE
+        sed -i "s/$PROD_LOCALHOST/$DEV_LOCALHOST/g" $FILE
+      elif [ $DEV_TO_PROD ]; then
+        echo "Restoring from development server to $PROD_DOMAIN."
+        sed -i "s/$DEV_GEOSERVER/$PROD_GEOSERVER/g" $FILE
+        sed -i "s/$DEV_GEONODE/$PROD_GEONODE/g" $FILE
+        sed -i "s/$DEV_LOCALHOST/$PROD_LOCALHOST/g" $FILE
+      fi
+    done
+  fi
+
   # Drop the databases that conflict with the backup
   echo
   echo "Dropping and restoring databases..."
