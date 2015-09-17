@@ -55,13 +55,13 @@ else
   if [ $PROD_DOMAIN ]; then
     PROD_GEOSERVER_URL="$PROD_DOMAIN/geoserver"
     PROD_GEOSERVER_PATH="/var/lib/tomcat7/webapps/geoserver"
-    PROD_GEONODE=$PROD_DOMAIN
-    PROD_LOCALHOST="localhost"
+    PROD_GEONODE="$PROD_DOMAIN/"
+    PROD_LOCALHOST="localhost/"
 
     DEV_GEOSERVER_URL="localhost:8080/geoserver"
     DEV_GEOSERVER_PATH="/install/portal/geonode/geoserver"
-    DEV_GEONODE="localhost:8000"
-    DEV_LOCALHOST="localhost:8000"
+    DEV_GEONODE="localhost:8000/"
+    DEV_LOCALHOST="localhost:8000/"
 
     # Escape slashes and dots to prepare our replacement patterns for sed
     PROD_GEOSERVER_URL=`echo $PROD_GEOSERVER_URL | perl -pe 's/(\.|\/)/\\\\$1/g'`
