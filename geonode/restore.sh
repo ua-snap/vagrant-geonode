@@ -18,7 +18,8 @@ while getopts ":p:fth" opt; do
   esac
 done
 
-if [ -n "$DEV_TO_PROD" -a -n "$PROD_TO_DEV" ]; then
+if [ "$DEV_TO_PROD" -a "$PROD_TO_DEV" ]; then
+  echo
   echo "Error: You cannot set both the -t and -f flags."
 fi
 
@@ -26,7 +27,7 @@ fi
 shift $((OPTIND-1))
 
 # Show help if requested or if a backup file has not been provided
-if [ -n "$HELP" -o $# -eq 0 ]; then
+if [ "$HELP" -o $# -eq 0 ]; then
   echo
   echo "Syntax: restore.sh [-p <production-domain>] [-t|-f] <backup-file>"
   echo
@@ -47,7 +48,7 @@ else
   # Descend into the backup
   cd $BACKUP_NAME
   
-  if [ -n $PROD_DOMAIN ]; then
+  if [ $PROD_DOMAIN ]; then
     PROD_GEOSERVER="$PROD_DOMAIN/geoserver"
     PROD_GEONODE=$PROD_DOMAIN
     PROD_LOCALHOST="localhost"
@@ -63,19 +64,23 @@ else
     DEV_GEONODE=`echo $DEV_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
     DEV_LOCALHOST=`echo $DEV_LOCALHOST | perl -pe 's/(\.|\/)/\\\\$1/g'`
 
-    for FILE in `find . -type f`; do
-      if [ $PROD_TO_DEV ]; then
-        echo "Restoring from $PROD_DOMAIN to development server."
+    if [ $PROD_TO_DEV ]; then
+      echo
+      echo "Restoring from $PROD_DOMAIN to development server."
+      for FILE in `find . -type f`; do
         sed -i "s/$PROD_GEOSERVER/$DEV_GEOSERVER/g" $FILE
         sed -i "s/$PROD_GEONODE/$DEV_GEONODE/g" $FILE
         sed -i "s/$PROD_LOCALHOST/$DEV_LOCALHOST/g" $FILE
-      elif [ $DEV_TO_PROD ]; then
-        echo "Restoring from development server to $PROD_DOMAIN."
+      done
+    elif [ $DEV_TO_PROD ]; then
+      echo
+      echo "Restoring from development server to $PROD_DOMAIN."
+      for FILE in `find . -type f`; do
         sed -i "s/$DEV_GEOSERVER/$PROD_GEOSERVER/g" $FILE
         sed -i "s/$DEV_GEONODE/$PROD_GEONODE/g" $FILE
         sed -i "s/$DEV_LOCALHOST/$PROD_LOCALHOST/g" $FILE
-      fi
-    done
+      done
+    fi
   fi
 
   # Drop the databases that conflict with the backup
