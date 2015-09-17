@@ -90,9 +90,11 @@ else
   # Copy the uploaded GeoNode data to GeoNode's installed directory
   echo
   echo "Moving GeoNode and GeoServer directories into place..."
+  rm -rf $INSTALL_DIR/geonode/geonode/uploaded
   cp -r uploaded $INSTALL_DIR/geonode/geonode/
 
   # Copy the GeoServer data directory to its required location
+  rm -rf $INSTALL_DIR/geonode/geoserver/data
   cp -r data $INSTALL_DIR/geonode/geoserver/
   
   # Remove the untarred backup
