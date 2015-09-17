@@ -63,7 +63,7 @@ else
     DEV_GEONODE="localhost:8000"
     DEV_LOCALHOST="localhost:8000"
 
-    # Escape slashes and dots in our replacement patterns
+    # Escape slashes and dots to prepare our replacement patterns for sed
     PROD_GEOSERVER_URL=`echo $PROD_GEOSERVER_URL | perl -pe 's/(\.|\/)/\\\\$1/g'`
     PROD_GEOSERVER_PATH=`echo $PROD_GEOSERVER_PATH | perl -pe 's/(\.|\/)/\\\\$1/g'`
     PROD_GEONODE=`echo $PROD_GEONODE | perl -pe 's/(\.|\/)/\\\\$1/g'`
@@ -104,25 +104,23 @@ else
   # Restore the databases from a SQL dump
   sudo -u postgres psql < geonode-backup.sql > /dev/null 2>&1
 
-  if [ $VAGRANT ]; then
-    GEONODE_DIR=$INSTALL_DIR/geonode
-    GEOSERVER_DIR=$INSTALL_DIR/geonode/geoserver
-  else
-    GEONODE_DIR=/home/geonode/geonode
-    GEOSERVER_DIR=/var/lib/tomcat7/webapps/geoserver
-  fi
-  
   # Copy the uploaded GeoNode data to GeoNode's installed directory
   echo
   echo "Moving GeoNode and GeoServer directories into place..."
-  sudo rm -rf $GEONODE_DIR/geonode/uploaded
-  sudo cp -r uploaded $GEONODE_DIR/geonode/
 
-  # Copy the GeoServer data directory to its required location
-  sudo rm -rf $GEOSERVER_DIR/data
-  sudo cp -r data $GEOSERVER_DIR/
-
-  if [ ! $VAGRANT ]; then
+  if [ $VAGRANT ]; then
+    rm -rf $INSTALL_DIR/geonode/geonode/uploaded
+    rm -rf $INSTALL_DIR/geonode/geoserver/data
+    cp -r uploaded $INSTALL_DIR/geonode/geonode/
+    cp -r data $INSTALL_DIR/geonode/geoserver/
+  else
+    GEONODE_DIR=/home/geonode/geonode/geonode
+    GEOSERVER_DIR=/var/lib/tomcat7/webapps/geoserver
+    sudo rm -rf $GEONODE_DIR/uploaded
+    sudo rm -rf $GEOSERVER_DIR/data
+    sudo cp -r uploaded $GEONODE_DIR/
+    sudo cp -r data $GEOSERVER_DIR/
+    sudo chown -R www-data:www-data $GEONODE_DIR/uploaded
     sudo chown -R tomcat7:tomcat7 $GEOSERVER_DIR/data
     find $GEOSERVER_DIR/data -type d -exec sudo chmod 775 '{}' +
   fi
