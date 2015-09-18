@@ -212,9 +212,28 @@ This section can be used to either create a backup of GeoNode and GeoServer from
 
 1. While on the development or production server that you want to restore on, run the following command in a directory you have write privileges to:
 
+   #### Production-to-production or development-to-development
    ```
    bash <path-to-restore.sh> <full-path-to-backup.tgz>
    An example on Vagrant VM: bash /install/restore.sh /install/backup-08-13-2015.tgz
    ```
 
    This will take a minute or so, but will result in a copy of the PostGIS database, GeoNode uploaded layers, and GeoServer layers that are queried by GeoNode.
+
+   #### Production-to-development or development-to-production
+
+   You can also restore a production backup into a development environment (or vice versa) by providing options to the `restore.sh` script. In the following usage cases, `<production-domain>` is always the domain of the public server (e.g., geonode.example.org) regardless of whether you are going production-to-development or development-to-production.
+
+   To restore a backup from a production server into a development environment:
+
+   ```
+   bash <path-to-restore.sh> -p <production-domain> -f <full-path-to-backup.tgz>
+   ```
+
+   To restore a backup from a development environment into a production server:
+
+   ```
+   bash <path-to-restore.sh> -p <production-domain> -t <full-path-to-backup.tgz>
+   ```
+
+   Remember, the `-f` option means "from production" and the `-t` option means "to production".
