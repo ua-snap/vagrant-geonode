@@ -47,7 +47,8 @@ else
   # Unzip and untar the backup directory
   echo 
   echo "Untarring backup..."
-  tar zxf $1 -C $PWD > /dev/null 2>&1
+  mkdir -p $PWD/$BACKUP_NAME
+  tar zxf $1 -C $PWD/$BACKUP_NAME --strip-components=1 > /dev/null 2>&1
 
   # Descend into the backup
   cd $BACKUP_NAME
