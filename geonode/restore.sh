@@ -44,15 +44,17 @@ else
   # This generates the basename of the gzipper tar file
   BACKUP_NAME=`basename "$1" | cut -d'.' -f1`
 
+  set -x
+
   # Unzip and untar the backup directory
-  echo 
+  echo
   echo "Untarring backup..."
   mkdir -p $PWD/$BACKUP_NAME
   tar zxf $1 -C $PWD/$BACKUP_NAME --strip-components=1 > /dev/null 2>&1
 
   # Descend into the backup
   cd $BACKUP_NAME
-  
+
   if [ $PROD_DOMAIN ]; then
     PROD_GEOSERVER_URL="$PROD_DOMAIN/geoserver"
     PROD_GEOSERVER_PATH="/var/lib/tomcat7/webapps/geoserver"
@@ -87,7 +89,7 @@ else
     elif [ $DEV_TO_PROD ]; then
       echo
       echo "Restoring from development server to $PROD_DOMAIN."
-      for FILE in `find . -type f`; do
+      for FILE in `find . -name '*.xml' -name '*.url' -name '*.sql' -type f`; do
         sed -i "s/$DEV_GEOSERVER_URL/$PROD_GEOSERVER_URL/g" $FILE
         sed -i "s/$DEV_GEOSERVER_PATH/$PROD_GEOSERVER_PATH/g" $FILE
         sed -i "s/$DEV_GEONODE/$PROD_GEONODE/g" $FILE
@@ -130,7 +132,7 @@ else
   cd ..
   rm -rf $BACKUP_NAME
 
-  # Export and source the virtual environment for the script 
+  # Export and source the virtual environment for the script
   export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
   export WORKON_HOME=$HOME/.venvs
   source `which virtualenvwrapper.sh`
@@ -154,6 +156,6 @@ else
     sudo service tomcat7 restart
   fi
 
-  echo 
+  echo
   echo "Backup restored."
 fi
