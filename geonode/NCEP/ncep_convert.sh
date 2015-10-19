@@ -36,8 +36,9 @@ for (( i=0; i< $(($total_vars)); i++)); do
     day=`date --date="$cur_date" +%d`
     month=`date --date="$cur_date" +%m`
     year=`date --date="$cur_date" +%Y`
+    variable_full_name=`echo ${nc_variables[$i]} | sed -e 's/+/ /g'`
 
-    printf "\n${RED}Downloading ${YELLOW}${nc_variables[$i]} ${RED}for the date ${BLUE}$month/$day/$year ${RED}...\n" 
+    printf "\n${RED}Downloading ${YELLOW}$variable_full_name ${RED}for the date ${BLUE}$month/$day/$year ${RED}...\n" 
     printf "This can take a few seconds...${NC}\n\n"
 
     # Capture the HTML from the GET request for our data. Place it into a text file.
