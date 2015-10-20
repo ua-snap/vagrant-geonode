@@ -14,8 +14,8 @@ NC='\033[0m'
 nc_variables=('Air+Temperature'
 	      'Sea+Surface+Temperature')
 
-file_names=('air_temp'
-	    'sea_surf_temp')
+file_names=('air_temperature'
+	    'sea_surface_temperature')
 
 var_names=('air'
            'skt')
@@ -30,6 +30,12 @@ printf "#######################${YELLOW}[NCEP Historical Data]${RED}############
 printf "########################################################################${NC}\n"
 
 total_vars=${#nc_variables[*]}
+
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
+export WORKON_HOME=$HOME/.venvs
+source `which virtualenvwrapper.sh`
+export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads
+workon geonode
 
 for (( i=0; i< $(($total_vars)); i++)); do
   for cur_date in "${dates[@]}"; do
@@ -79,6 +85,9 @@ for (( i=0; i< $(($total_vars)); i++)); do
     gdalwarp -t_srs WGS84 temporary.tif grey.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
     gdaldem color-relief grey.tif color.txt $tif_name > /dev/null 2>&1
     printf "\n${GREEN}Successfully created ${RED}$tif_name ${NC}\n"
+
+    # Import layer into GeoNode. Will replace layer if already created.
+    `which python` $INSTALL_DIR/geonode/manage.py importlayers -o $tif_name
     rm -f temporary.txt
     rm -f temporary.nc
     rm -f temporary.tif
