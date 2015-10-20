@@ -66,16 +66,16 @@ for (( i=0; i< $(($total_vars)); i++)); do
 
     case $cur_date in
       '-2 days')
-        tif_name="daily_${file_names[$i]}.tif"
+        tif_name="NCEP_daily_${file_names[$i]}.tif"
         ;;
       '-7 days')
-        tif_name="weekly_${file_names[$i]}.tif"
+        tif_name="NCEP_weekly_${file_names[$i]}.tif"
         ;;
       '-1 month')
-        tif_name="monthly_${file_names[$i]}.tif"
+        tif_name="NCEP_monthly_${file_names[$i]}.tif"
         ;;
       '-1 year')
-        tif_name="yearly_${file_names[$i]}.tif"
+        tif_name="NCEP_yearly_${file_names[$i]}.tif"
         ;;
     esac
 
