@@ -134,7 +134,7 @@ gdaldem color-relief tmp2m_greenwich_centered.tif temp_color_c.txt air_temperatu
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
 `which python` $INSTALL_DIR/geonode/manage.py importlayers -o "air_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
 
-#rm -f $tmpsfc_file
-#rm -f $tmp2m_file
-#rm -f *wrong_center.tif
-#rm -f *greenwich_center.tif
+rm -f $tmpsfc_file
+rm -f $tmp2m_file
+rm -f *wrong_center.tif
+rm -f *greenwich_center.tif
