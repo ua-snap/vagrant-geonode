@@ -83,11 +83,12 @@ for (( i=0; i< $(($total_vars)); i++)); do
     printf "${RED}Translating the NetCDF file into a GeoTiff file...${NC}\n"
     gdal_translate -a_srs EPSG:4326 -of GTiff netCDF:"temporary.nc":${var_name[$i]} temporary.tif > /dev/null 2>&1
     gdalwarp -t_srs WGS84 temporary.tif grey.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
-    gdaldem color-relief grey.tif color.txt $tif_name > /dev/null 2>&1
+    gdaldem color-relief grey.tif temp_color_k.txt $tif_name > /dev/null 2>&1
     printf "\n${GREEN}Successfully created ${RED}$tif_name ${NC}\n"
 
     # Import layer into GeoNode. Will replace layer if already created.
-    `which python` $INSTALL_DIR/geonode/manage.py importlayers -o $tif_name
+    printf "${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
+    `which python` $INSTALL_DIR/geonode/manage.py importlayers -o $tif_name > /dev/null 2>&1
     rm -f temporary.txt
     rm -f temporary.nc
     rm -f temporary.tif
@@ -96,3 +97,44 @@ for (( i=0; i< $(($total_vars)); i++)); do
   done
 done
 
+# Forecast anomaly for the month. This is updated once per month which contains a forecast for the next 10 months.
+# This forecast is made globally available as data on the 8th of each month. 
+
+printf "\n${RED}########################################################################\n"
+printf "#######################${YELLOW}[NCEP Forecast Data]${RED}###########################\n"
+printf "########################################################################${NC}\n"
+
+# Since the new data is only released on the 8th of each month, 
+# if we are not on the 9th of the month, do not try to go to the new data.
+if [ "`date +%d`" -ge "09" ]; then
+  req_date="`date +%Y%m`"
+else
+  req_date="`date +%Y%m --date='-1 month'`"
+fi
+
+printf "\n${RED}Downloading the GRIB files for ${YELLOW}Sea Surface ${RED}and ${YELLOW}2m Air Temperature...${NC}\n"
+tmpsfc_file="tmpsfc.${req_date}0100.01.CFSv2.fcst.avrg.1x1.grb"
+tmp2m_file="tmp2m.${req_date}0100.01.CFSv2.fcst.avrg.1x1.grb"
+wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmpsfc_file" > /dev/null 2>&1
+wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmp2m_file" > /dev/null 2>&1
+
+printf "\n${RED}Translating the ${YELLOW}Sea Surface Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
+gdal_translate -of Gtiff -b 1 $tmpsfc_file tmpsfc_wrong_center.tif > /dev/null 2>&1
+gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif tmpsfc_greenwich_centered.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
+gdaldem color-relief tmpsfc_greenwich_centered.tif temp_color_c.txt sea_surface_temperature_current_month_forecast_average.tif > /dev/null 2>&1 
+
+printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
+`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "sea_surface_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+
+printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
+gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
+gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif tmp2m_greenwich_centered.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
+gdaldem color-relief tmp2m_greenwich_centered.tif temp_color_c.txt air_temperature_current_month_forecast_average.tif > /dev/null 2>&1
+
+printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
+`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "air_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+
+#rm -f $tmpsfc_file
+#rm -f $tmp2m_file
+#rm -f *wrong_center.tif
+#rm -f *greenwich_center.tif

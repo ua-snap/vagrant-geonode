@@ -9,4 +9,5 @@
 !NCEP/
 NCEP/*
 !NCEP/ncep_convert.sh
-!NCEP/color.txt
+!NCEP/temp_color_k.txt
+!NCEP/temp_color_c.txt
