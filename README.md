@@ -4,17 +4,13 @@ This repo contains notes and utilities for setting up GeoNode for our developmen
 
 ## Development setup
 
-Clone this repo, `vagrant up`, and when that finishes there are some manual steps to be done, [adapted from this site](http://docs.geonode.org/en/latest/tutorials/devel/install_devmode/index.html#install-devmode).  `vagrant ssh` into the box, then:
+The [vagrant-triggers](https://github.com/emyl/vagrant-triggers) plugin must be installed:
 
-GeoNode should be available on your host machine at `http://localhost:8000`.
+```bash
+vagrant plugin install vagrant-triggers
+```
 
-After a restart of the VM, you will need to manually run the following commands to get your development environment running again.
-
-   ```
-   workon geonode
-   cd /install/portal/geonode
-   paver start_geoserver && paver start_django -b 0.0.0.0:8000
-   ```
+With that installed, clone this repo and `vagrant up`.  After a while, GeoNode should be available on your host machine at `http://localhost:8000`.
 
 ## Production setup
 
