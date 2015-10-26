@@ -1,10 +1,10 @@
 #! /bin/bash
 # This script is designed to install GeoNode with the MapLoom extension that has
-# been forked by the Univsity of Alaska Fairbanks group Scenarios Network for 
+# been forked by the Univsity of Alaska Fairbanks group Scenarios Network for
 # Alaska and Arctic Planning (SNAP). By running this script on an Ubuntu 14.04
 # system will result in a working GeoNode instance on the localhost port 8000. This
 # is useful for development inside of a Vagrant instance that can provision the
-# development host using this script. 
+# development host using this script.
 
 # User running this script. Must be a user with sudo to root.
 USER=`whoami`
@@ -21,9 +21,6 @@ if [ -d $INSTALL_DIR ]; then
   echo "Removing old geonode installation for fresh provisioning."
   rm -rf $INSTALL_DIR
 fi
-
-# Node.js setup
-sudo sh -c 'curl -sL https://deb.nodesource.com/setup | bash -'
 
 # Make sure apt-get is updated and install all necessary pacakges
 sudo apt-get update
@@ -46,7 +43,6 @@ sudo apt-get install -y            \
     libxslt1-dev                   \
     libpq-dev                      \
     maven2                         \
-    nodejs                         \
     openjdk-7-jre                  \
     patch                          \
     postgresql                     \
@@ -75,8 +71,6 @@ sudo apt-get install -y            \
     zlib1g-dev
 
 sudo pip install virtualenvwrapper
-sudo npm install -y -g bower
-sudo npm install -y -g grunt-cli
 
 # Ensure that the INSTALL_DIR is created and owned by the user running the script
 sudo mkdir -p $INSTALL_DIR
@@ -140,7 +134,7 @@ mv GDAL-1.10.0/setup2.cfg GDAL-1.10.0/setup.cfg
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 
-# Build the GDAL extensions 
+# Build the GDAL extensions
 cd GDAL-1.10.0
 python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
 cd ..
@@ -154,7 +148,11 @@ rm GDAL-1.10.0.tar.gz
 sed -e "s/-Xmx512m/-Xmx4096m/" < geonode/pavement.py > geonode/pavement2.py
 mv geonode/pavement2.py geonode/pavement.py
 
-# Run paver setup and paver sync to get the paver start / stop commands for the 
+# Remove default base layers from GeoNode
+sed -i'.bak' -r '/^MAP_BASELAYERS/, /}]$/ d' geonode/geonode/settings.py
+sed -i'.bak' -r '/^DEFAULT_MAP_ZOOM/ a MAP_BASELAYERS = []' geonode/geonode/settings.py
+
+# Run paver setup and paver sync to get the paver start / stop commands for the
 # GeoNode and GeoServer tools.
 cd geonode
 paver setup
@@ -164,17 +162,6 @@ cd ..
 # Turn of Tomcat since it is unnecessary for running GeoNode / GeoServer
 sudo service tomcat7 stop
 sudo update-rc.d tomcat7 disable
-
-# Chown the .npm directory to the user currently running this script
-sudo chown -R $USER ~/.npm/
-
-# Clone and install the SNAP Arctic Portal Git Repository
-git clone https://github.com/ua-snap/snap-arctic-portal.git
-pip install -e snap-arctic-portal
-
-# Add snapmapapp as GeoNode apps to settings.py
-sed -e "s/) + GEONODE_APPS/'snapmapapp',\n) + GEONODE_APPS/" < geonode/geonode/settings.py > geonode/geonode/settings2.py
-mv geonode/geonode/settings2.py geonode/geonode/settings.py
 
 # Configure PostGIS as the GeoNode backend
 cd geonode
