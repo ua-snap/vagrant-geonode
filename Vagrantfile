@@ -64,4 +64,19 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", path: "automation.sh", privileged: false
+
+  # Cycle GeoNode & GeoServer after a restart, since GeoServer often
+  # doesn't recovery gracefully after being suspended.
+  config.trigger.after [:up, :reload, :resume] do
+    info "Restarting Django & Geonode"
+    run_remote "
+      su - vagrant
+      export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
+      export WORKON_HOME=~/.venvs
+      source /usr/local/bin/virtualenvwrapper.sh
+      workon geonode;
+      cd /install/portal/geonode;
+      paver stop && paver start_geoserver && paver start_django -b 0.0.0.0:8000
+    "
+  end
 end
