@@ -40,11 +40,13 @@ workon geonode
 for (( i=0; i< $(($total_vars)); i++)); do
   for cur_date in "${dates[@]}"; do
     day=`date --date="$cur_date" +%d`
+    day_strip_leading_zero=`date --date="$cur_date" +%-d`
     month=`date --date="$cur_date" +%m`
+    month_name=`date --date="$cur_date" +%B`
     year=`date --date="$cur_date" +%Y`
     variable_full_name=`echo ${nc_variables[$i]} | sed -e 's/+/ /g'`
 
-    printf "\n${RED}Downloading ${YELLOW}$variable_full_name ${RED}for the date ${BLUE}$month/$day/$year ${RED}...\n" 
+    printf "\n${RED}Downloading ${YELLOW}$variable_full_name ${RED}for the date ${BLUE}$month/$day/$year ${RED}...\n"
     printf "This can take a few seconds...${NC}\n\n"
 
     # Capture the HTML from the GET request for our data. Place it into a text file.
@@ -67,28 +69,40 @@ for (( i=0; i< $(($total_vars)); i++)); do
     case $cur_date in
       '-2 days')
         tif_name="NCEP_daily_${file_names[$i]}.tif"
+        layer_prefix="NCEP_daily_"
         ;;
       '-7 days')
         tif_name="NCEP_weekly_${file_names[$i]}.tif"
+        layer_prefix="NCEP_weekly_"
         ;;
       '-1 month')
         tif_name="NCEP_monthly_${file_names[$i]}.tif"
+        layer_prefix="NCEP_monthly_"
         ;;
       '-1 year')
         tif_name="NCEP_yearly_${file_names[$i]}.tif"
+        layer_prefix="NCEP_yearly_"
         ;;
     esac
 
     # GDAL translate the NetCDF file into a GeoTIFF with EPSG:4326 projection called daily_air_temp.tif.
     printf "${RED}Translating the NetCDF file into a GeoTiff file...${NC}\n"
     gdal_translate -a_srs EPSG:4326 -of GTiff netCDF:"temporary.nc":${var_name[$i]} temporary.tif > /dev/null 2>&1
-    gdalwarp -t_srs WGS84 temporary.tif grey.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
-    gdaldem color-relief grey.tif temp_color_k.txt $tif_name > /dev/null 2>&1
+    gdal_calc.py -A temporary.tif --overwrite --outfile=temporary.tif --calc="A+275.15"
+    gdalwarp -t_srs WGS84 temporary.tif $tif_name -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
     printf "\n${GREEN}Successfully created ${RED}$tif_name ${NC}\n"
 
     # Import layer into GeoNode. Will replace layer if already created.
     printf "${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-    `which python` $INSTALL_DIR/geonode/manage.py importlayers -o $tif_name > /dev/null 2>&1
+
+    `which python` \
+    $INSTALL_DIR/geonode/manage.py \
+    importlayers \
+    -v 3 \
+    -t "$variable_full_name, $month_name $day_strip_leading_zero, $year" \
+    -n "${layer_prefix}${variable_full_name}" \
+    -o $tif_name \
+
     rm -f temporary.txt
     rm -f temporary.nc
     rm -f temporary.tif
@@ -98,18 +112,20 @@ for (( i=0; i< $(($total_vars)); i++)); do
 done
 
 # Forecast anomaly for the month. This is updated once per month which contains a forecast for the next 10 months.
-# This forecast is made globally available as data on the 8th of each month. 
+# This forecast is made globally available as data on the 8th of each month.
 
 printf "\n${RED}########################################################################\n"
 printf "#######################${YELLOW}[NCEP Forecast Data]${RED}###########################\n"
 printf "########################################################################${NC}\n"
 
-# Since the new data is only released on the 8th of each month, 
+# Since the new data is only released on the 8th of each month,
 # if we are not on the 9th of the month, do not try to go to the new data.
 if [ "`date +%d`" -ge "09" ]; then
   req_date="`date +%Y%m`"
+  proj_title="`date +'%B, %Y'`"
 else
   req_date="`date +%Y%m --date='-1 month'`"
+  proj_title="`date +'%B, %Y' --date='-1 month'`"
 fi
 
 printf "\n${RED}Downloading the GRIB files for ${YELLOW}Sea Surface ${RED}and ${YELLOW}2m Air Temperature...${NC}\n"
@@ -120,19 +136,32 @@ wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmp2
 
 printf "\n${RED}Translating the ${YELLOW}Sea Surface Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
 gdal_translate -of Gtiff -b 1 $tmpsfc_file tmpsfc_wrong_center.tif > /dev/null 2>&1
-gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif tmpsfc_greenwich_centered.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
-gdaldem color-relief tmpsfc_greenwich_centered.tif temp_color_c.txt sea_surface_temperature_current_month_forecast_average.tif > /dev/null 2>&1 
+gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif sea_surface_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
 `which python` $INSTALL_DIR/geonode/manage.py importlayers -o "sea_surface_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
 
 printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
 gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
-gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif tmp2m_greenwich_centered.tif -wo SOURCE_EXTRA=1000 --config CENTER_LONG 0 > /dev/null 2>&1
-gdaldem color-relief tmp2m_greenwich_centered.tif temp_color_c.txt air_temperature_current_month_forecast_average.tif > /dev/null 2>&1
+gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif air_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "air_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+`which python` \
+$INSTALL_DIR/geonode/manage.py \
+importlayers \
+-t "Projected Air Temperature, $proj_title" \
+-n "ncep_air_temperature_current_month_forecast_average" \
+-o "air_temperature_current_month_forecast_average.tif" \
+> /dev/null 2>&1
+
+printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
+`which python` \
+$INSTALL_DIR/geonode/manage.py \
+importlayers \
+-t "Projected Sea Surface Temperature, $proj_title" \
+-n "ncep_sea_surface_temperature_current_month_forecast_average" \
+-o "sea_surface_current_month_forecast_average.tif" \
+> /dev/null 2>&1
 
 rm -f $tmpsfc_file
 rm -f $tmp2m_file
