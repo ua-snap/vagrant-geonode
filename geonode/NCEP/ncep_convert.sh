@@ -139,7 +139,12 @@ gdal_translate -of Gtiff -b 1 $tmpsfc_file tmpsfc_wrong_center.tif > /dev/null 2
 gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif sea_surface_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "sea_surface_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+`which python` \
+$INSTALL_DIR/geonode/manage.py \
+importlayers \
+-t "Projected Air Temperature, $proj_title" \
+-n "ncep_air_temperature_current_month_forecast_average" \
+-o "air_temperature_current_month_forecast_average.tif"
 
 printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
 gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
@@ -149,19 +154,9 @@ printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
 `which python` \
 $INSTALL_DIR/geonode/manage.py \
 importlayers \
--t "Projected Air Temperature, $proj_title" \
--n "ncep_air_temperature_current_month_forecast_average" \
--o "air_temperature_current_month_forecast_average.tif" \
-> /dev/null 2>&1
-
-printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-`which python` \
-$INSTALL_DIR/geonode/manage.py \
-importlayers \
 -t "Projected Sea Surface Temperature, $proj_title" \
 -n "ncep_sea_surface_temperature_current_month_forecast_average" \
--o "sea_surface_current_month_forecast_average.tif" \
-> /dev/null 2>&1
+-o "sea_surface_temperature_current_month_forecast_average.tif"
 
 rm -f $tmpsfc_file
 rm -f $tmp2m_file
