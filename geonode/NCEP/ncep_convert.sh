@@ -134,9 +134,9 @@ tmp2m_file="tmp2m.${req_date}0100.01.CFSv2.fcst.avrg.1x1.grb"
 wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmpsfc_file" > /dev/null 2>&1
 wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmp2m_file" > /dev/null 2>&1
 
-printf "\n${RED}Translating the ${YELLOW}Sea Surface Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
-gdal_translate -of Gtiff -b 1 $tmpsfc_file tmpsfc_wrong_center.tif > /dev/null 2>&1
-gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif sea_surface_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
+printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
+gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
+gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif air_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
 `which python` \
@@ -146,9 +146,9 @@ importlayers \
 -n "ncep_air_temperature_current_month_forecast_average" \
 -o "air_temperature_current_month_forecast_average.tif"
 
-printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
-gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
-gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif air_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
+printf "\n${RED}Translating the ${YELLOW}Sea Surface Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
+gdal_translate -of Gtiff -b 1 $tmpsfc_file tmpsfc_wrong_center.tif > /dev/null 2>&1
+gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif sea_surface_temperature_current_month_forecast_average.tif -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
 `which python` \
