@@ -223,7 +223,10 @@ This section can be used to either create a backup of GeoNode and GeoServer from
    To restore a backup from a production server into a development environment:
 
    ```
-   bash <path-to-restore.sh> -p <production-domain> -f <full-path-to-backup.tgz>
+   vagrant ssh
+   workon geonode
+   cd /install
+   ./restore.sh -f backup-10-10-15.tgz
    ```
 
    To restore a backup from a development environment into a production server:
