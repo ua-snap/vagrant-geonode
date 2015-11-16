@@ -88,7 +88,7 @@ for (( i=0; i< $(($total_vars)); i++)); do
     # GDAL translate the NetCDF file into a GeoTIFF with EPSG:4326 projection called daily_air_temp.tif.
     printf "${RED}Translating the NetCDF file into a GeoTiff file...${NC}\n"
     gdal_translate -a_srs EPSG:4326 -of GTiff netCDF:"temporary.nc":${var_name[$i]} temporary.tif > /dev/null 2>&1
-    gdal_calc.py -A temporary.tif --overwrite --outfile=temporary.tif --calc="A-275.15"
+    gdal_calc.py -A temporary.tif --overwrite --outfile=temporary.tif --calc="A-273.15"
     gdalwarp -t_srs WGS84 temporary.tif $tif_name -wo SOURCE_EXTRA=100 --config CENTER_LONG 0 > /dev/null 2>&1
     printf "\n${GREEN}Successfully created ${RED}$tif_name ${NC}\n"
 
