@@ -1,0 +1,29 @@
+#* * * * * * * * * * ACCESSING THE NCEP-REANALYSIS 2 FIELDS VIA FTP * * * * * * * * * * 
+# NOTES:	
+# # some info from Frank Warmerdam on dealing with these 0-30 ref sys
+# http://gis.stackexchange.com/questions/37790/how-to-reproject-raster-from-0-360-to-180-180-with-cutting-180-meridian
+# # this looks promising:
+# http://www.esrl.noaa.gov/psd/data/gridded/help.html#FTP
+# # this is the surface fields up to-date
+# ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface/
+# testing link address for an airtemp file:
+# ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface/air.sig995.2015.nc
+# * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+# RECIPE FOR GDAL VERSION 1.9.2
+
+# change into some directory
+cd /workspace/Shared/Tech_Projects/ArcticPortal/project_data/ncep_ra2/
+
+# select the data we want and convert the series to a multiband GTiff
+gdal_translate -a_srs WGS84 -co "COMPRESS=LZW" NETCDF:"air.sig995.2015.nc":air air_sig995_2015.tif
+
+# rotate longitudes from pclatlong and into greenwich-centered latlong -- adds a column, which may mean we need to alter the extent
+gdalwarp -overwrite -tr 2.5 2.5 -tap -r bilinear -te -180 -90 180 90 -multi -co "COMPRESS=LZW" -t_srs WGS84 -wo "SOURCE_EXTRA=1000" air_sig995_2015.tif air_sig995_2015_greenwich.tif
+
+# warp to polar -- GDAL 1.9.1 seems to have issues reprojecting from anything but the full WGS84 extent to the 3572.
+gdalwarp -overwrite -r bilinear -multi -s_srs WGS84 -t_srs EPSG:3572 -co "COMPRESS=LZW" -wo "NUM_THREADS=15" -wo "SOURCE_EXTRA=1000" air_sig995_2015_greenwich.tif air_sig995_2015_epsg3572.tif
+
+# convert it to Celcius from Kelvin (-273.15)
+gdal_calc.py -A air_sig995_2015_epsg3572_crop.tif --outfile air_C_sig995_2015_epsg3572.tif --calc "A-273.15"
+
