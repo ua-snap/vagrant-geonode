@@ -37,6 +37,7 @@ gdal_calc.py -A air_sig995_2015_epsg3572_40N.tif --outfile air_C_sig995_2015_eps
 # from shapely.geometry import Polygon
 # import geopandas as gpd
 # from collections import OrderedDict
+# import numpy as np
 # 
 # epsg3572 = pyproj.Proj( '+init=EPSG:3572' ) # reproject function
 # num_lons = (360.0 / 2.5) # how many lons can we have?
