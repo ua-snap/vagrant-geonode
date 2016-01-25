@@ -11,3 +11,10 @@ NCEP/*
 !NCEP/ncep_convert.sh
 !NCEP/temp_color_k.txt
 !NCEP/temp_color_c.txt
+!NCEP/40N_epsg3572.cpg
+!NCEP/40N_epsg3572.dbf
+!NCEP/40N_epsg3572.prj
+!NCEP/40N_epsg3572.shp
+!NCEP/40N_epsg3572.shx
+!NCEP/process_ncep.sh
+!NCEP/ncep_ingest_recipe.txt

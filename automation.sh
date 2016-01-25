@@ -25,10 +25,10 @@ fi
 # Make sure apt-get is updated and install all necessary pacakges
 sudo apt-get update
 sudo apt-get install -y            \
+    software-properties-common     \
     ant                            \
     apache2                        \
     build-essential                \
-    gdal-bin                       \
     gettext                        \
     git                            \
     libapache2-mod-wsgi            \
@@ -71,6 +71,11 @@ sudo apt-get install -y            \
     zlib1g-dev
 
 sudo pip install virtualenvwrapper
+
+# Update GDAL to 1.11.x
+# We need 1.11.2 at a minimum
+add-apt-repository -Y ppa:ubuntugis/ubuntugis-unstable && sudo apt-get update
+apt-get -Y gdal-bin
 
 # Ensure that the INSTALL_DIR is created and owned by the user running the script
 sudo mkdir -p $INSTALL_DIR
