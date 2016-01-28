@@ -1,7 +1,7 @@
 #! /bin/bash
 set -x
 
-rm -rf /tmp/ncep
+# rm -rf /tmp/ncep
 mkdir -p /tmp/ncep
 
 # Download this & last year's NetCDF files.
@@ -9,7 +9,7 @@ this_year=`date +%Y`
 last_year=$((this_year - 1))
 
 # Skip download?
-DOWNLOAD=false
+DOWNLOAD=true
 
 # Since the new data is only released on the 8th of each month,
 # if we are not on the 9th of the month, do not try to go to the new data.
@@ -19,51 +19,65 @@ else
   req_date="`date +%Y%m --date='-1 month'`"
 fi
 
+# http://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/2016010800/
 # Fetch files
-tmp2m_file="tmp2m.${req_date}0100.01.CFSv2.fcst.avrg.1x1.grb"
-wget "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmp2m_file" > /dev/null 2>&1
+tmp2m_file="tmp2m.${req_date}0100.01.CFSv2.anom.avrg.1x1.grb"
+if [ ! -f /tmp/ncep/$tmp2m_file ]; then
+	wget -O "/tmp/ncep/$tmp2m_file" "ftp://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/${req_date}0800/$tmp2m_file"
+fi
 
 gdal_translate \
 	-of Gtiff \
 	-b 1 \
-	$tmp2m_file \
+	/tmp/ncep/$tmp2m_file \
 	/tmp/ncep/ncep_projected_wrong_center.tif
 
 gdalwarp \
+	-nomd \
 	-overwrite \
-	-t_srs WGS84 \
-	-wo SOURCE_EXTRA=10 \
-	--config CENTER_LONG 0 \
+	-multi \
+	-r bilinear \
+	-t_srs "EPSG:4326" \
+	-tr 1 1 \
+	-te -180 -90 180 90 \
+	-wo "SOURCE_EXTRA=50" \
 	/tmp/ncep/ncep_projected_wrong_center.tif \
 	/tmp/ncep/ncep_projected_greenwich.tif
 
 gdalwarp \
+	-nomd \
 	-overwrite \
-	-r bilinear \
 	-multi \
-	-s_srs WGS84 \
-	-t_srs EPSG:3572 \
+	-r bilinear \
+	-t_srs "EPSG:3572" \
+	-wo "SOURCE_EXTRA=50" \
+	-dstnodata 9999 \
+	-dstalpha \
 	/tmp/ncep/ncep_projected_greenwich.tif \
 	/tmp/ncep/ncep_projected_epsg3572.tif
 
 gdalwarp \
+	-nomd \
 	-overwrite \
-	-r bilinear \
-	-multi \
-	-t_srs EPSG:3572 \
 	-cutline "40N_epsg3572.shp" \
 	-crop_to_cutline \
+	-srcnodata 9999 \
+	-dstnodata 9999 \
+	-dstalpha \
 	/tmp/ncep/ncep_projected_epsg3572.tif \
-	/tmp/ncep/ncep_projected_air_temp.tif
+	/tmp/ncep/ncep_projected_air_temp_k.tif
 
+gdal_calc.py \
+	--overwrite \
+	--NoDataValue=9999 \
+	-A /tmp/ncep/ncep_projected_air_temp_k.tif \
+	--calc "A+273.15" \
+	--outfile /tmp/ncep/ncep_projected_air_temp.tif
 
 `which python` \
 	$INSTALL_DIR/geonode/manage.py \
 	importlayers \
-	-o "/ncep_projected_air_temp.tif" \
-	/tmp/ncep/ncep_projected_air_temp.tif
-
-exit(1)
+	-o "/tmp/ncep/ncep_projected_air_temp.tif"
 
 # Historical data
 if $DOWNLOAD; then
