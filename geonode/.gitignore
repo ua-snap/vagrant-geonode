@@ -11,3 +11,6 @@ NCEP/*
 !NCEP/ncep_convert.sh
 !NCEP/temp_color_k.txt
 !NCEP/temp_color_c.txt
+!Barrow
+Barrow/*
+!Barrow/barrow.py
