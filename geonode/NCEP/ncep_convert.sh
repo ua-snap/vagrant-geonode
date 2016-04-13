@@ -88,7 +88,7 @@ for (( i=0; i< $(($total_vars)); i++)); do
 
     # Import layer into GeoNode. Will replace layer if already created.
     printf "${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-    `which python` $INSTALL_DIR/geonode/manage.py importlayers -o $tif_name > /dev/null 2>&1
+    `which python` $INSTALL_DIR/geonode/manage.py importlayers -d "`date --date="$cur_date" +'%Y-%m-%d %H:%M:%S'`" -o "$tif_name" > /dev/null 2>&1
     rm -f temporary.txt
     rm -f temporary.nc
     rm -f temporary.tif
@@ -108,8 +108,10 @@ printf "########################################################################
 # if we are not on the 9th of the month, do not try to go to the new data.
 if [ "`date +%d`" -ge "09" ]; then
   req_date="`date +%Y%m`"
+  import_date="`date +'%Y-%m-%d %H:%M:%S'`"
 else
   req_date="`date +%Y%m --date='-1 month'`"
+  import_date="`date --date='-1 month' +'%Y-%m-%d %H:%M:%S'`"
 fi
 
 printf "\n${RED}Downloading the GRIB files for ${YELLOW}Sea Surface ${RED}and ${YELLOW}2m Air Temperature...${NC}\n"
@@ -124,7 +126,7 @@ gdalwarp -t_srs WGS84 tmpsfc_wrong_center.tif tmpsfc_greenwich_centered.tif -wo 
 gdaldem color-relief tmpsfc_greenwich_centered.tif temp_color_c.txt sea_surface_temperature_current_month_forecast_average.tif > /dev/null 2>&1 
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "sea_surface_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+`which python` $INSTALL_DIR/geonode/manage.py importlayers -d "$import_date" -o "sea_surface_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
 
 printf "\n${RED}Translating the ${YELLOW}2m Air Temperature${RED} GRIB file into a colored GeoTIFF file...${NC}\n"
 gdal_translate -of Gtiff -b 1 $tmp2m_file tmp2m_wrong_center.tif > /dev/null 2>&1
@@ -132,7 +134,7 @@ gdalwarp -t_srs WGS84 tmp2m_wrong_center.tif tmp2m_greenwich_centered.tif -wo SO
 gdaldem color-relief tmp2m_greenwich_centered.tif temp_color_c.txt air_temperature_current_month_forecast_average.tif > /dev/null 2>&1
 
 printf "\n${RED}Importing new GeoTIFF into GeoNode...${NC}\n"
-`which python` $INSTALL_DIR/geonode/manage.py importlayers -o "air_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
+`which python` $INSTALL_DIR/geonode/manage.py importlayers -d "$import_date" -o "air_temperature_current_month_forecast_average.tif" > /dev/null 2>&1
 
 rm -f $tmpsfc_file
 rm -f $tmp2m_file
