@@ -3,21 +3,35 @@ import urllib2
 import os
 import subprocess
 import json
+import re
+from datetime import datetime
 
 jsonFeed = 'http://feeder.gina.alaska.edu/radar-uaf-barrow-seaice-geotif.json'
 rawGeoTiff = '/tmp/barrow_raw.tif'
 processedGeoTiff = '/tmp/barrow_sea_ice_radar.tif'
-mapId = 2
 
+# Download and parse GINA's Barrow sea ice GeoTIFF feed.
+# The first element in the feed is the most recent GeoTIFF.
 response = urllib2.urlopen(jsonFeed)
 geoTiffs = json.loads(response.read())
-geoTiffUrl = geoTiffs[0]['source']
+latestGeoTiff = geoTiffs[0]
 
+# Grab the latest GeoTIFF's creation date, throwing out the time zone because
+# strptime() is not able to parse the time zone in this format.
+match = re.search('^.*(?=-0[8-9]:00$)', latestGeoTiff['created_at'])
+dateObject = datetime.strptime(match.group(0), '%Y-%m-%dT%H:%M:%S')
+
+# Format the date as needed for GeoNode's importlayers management command.
+dateString = dateObject.strftime('%Y-%m-%d %H:%M:%S')
+
+# Download and save the GeoTIFF file.
+geoTiffUrl = latestGeoTiff['source']
 response = urllib2.urlopen(geoTiffUrl)
 localFile = open(rawGeoTiff, 'wb')
 localFile.write(response.read())
 localFile.close()
 
+# Georeference the GeoTIFF in EPSG:3857 and make the background transparent.
 subprocess.call([
   'gdalwarp',
   '-s_srs',
@@ -33,22 +47,28 @@ subprocess.call([
   processedGeoTiff
 ])
 
+# Import the GeoTIFF over the existing Barrow sea ice layer in GeoNode, and
+# update its publication date with the GeoTIFF's creation date.
 subprocess.call([
   'python',
   os.environ['INSTALL_DIR'] + '/geonode/manage.py',
   'importlayers',
+  '-d',
+  dateString,
   '-o',
   processedGeoTiff
 ])
 
+# Rename the Barrow sea ice map layer with the title from the JSON feed.
 subprocess.call([
   'python',
   os.environ['INSTALL_DIR'] + '/geonode/manage.py',
   'changemaplayertitle',
-  mapId,
+  '32',
   'geonode:barrow_sea_ice_radar',
-  geoTiffs[0]['title']
+  latestGeoTiff['title']
 ])
 
+# Clean up temporary files so we don't get warnings from GDAL in the future.
 os.remove(rawGeoTiff)
 os.remove(processedGeoTiff)
