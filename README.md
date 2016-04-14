@@ -236,3 +236,24 @@ This section can be used to either create a backup of GeoNode and GeoServer from
    ```
 
    Remember, the `-f` option means "from production" and the `-t` option means "to production".
+
+
+#### In case you need to install GDAL V1.11+
+
+```
+sudo apt-get install software-properties-common python-software-properties
+sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable && sudo apt-get update
+sudo apt-get install libgdal-dev
+sudo apt-get install gdal-bin
+gdalinfo --version
+cd ~
+pip install --download=. --no-use-wheel GDAL==1.11.2
+tar -zxvf GDAL-1.11.2.tar.gz
+sed -e 's/gdal_config = ..\/..\/apps\/gdal-config/gdal_config = \/usr\/bin\/gdal-config/' < GDAL-1.11.2/setup.cfg > GDAL-1.11.2/setup2.cfg
+mv GDAL-1.11.2/setup2.cfg GDAL-1.11.2/setup.cfg
+export CPLUS_INCLUDE_PATH=/usr/include/gdal
+export C_INCLUDE_PATH=/usr/include/gdal
+cd GDAL-1.11.2/
+python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
+```
+
