@@ -15,8 +15,10 @@ DOWNLOAD=true
 # if we are not on the 9th of the month, do not try to go to the new data.
 if [ "`date +%d`" -ge "09" ]; then
   req_date="`date +%Y%m`"
+  import_date="`date +'%Y-%m-%d %H:%M:%S'`"
 else
   req_date="`date +%Y%m --date='-1 month'`"
+  import_date="`date --date='-1 month' +'%Y-%m-%d %H:%M:%S'`"
 fi
 
 # http://ftp.cpc.ncep.noaa.gov/NMME/realtime_anom/CFSv2/2016010800/
@@ -77,6 +79,7 @@ gdal_calc.py \
 `which python` \
 	$INSTALL_DIR/geonode/manage.py \
 	importlayers \
+	-d "$import_date" \
 	-o "/tmp/ncep/ncep_projected_air_temp.tif"
 
 # Historical data
@@ -169,6 +172,7 @@ for cur_date in "${dates[@]}"; do
     `which python` \
     	$INSTALL_DIR/geonode/manage.py \
     	importlayers \
+	-d "`date --date="$cur_date" +'%Y-%m-%d %H:%M:%S'`" \
     	-o $tif_name \
     	/tmp/ncep/ncep_historical_$layername.tif
 
