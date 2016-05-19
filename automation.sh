@@ -64,11 +64,16 @@ sudo apt-get install -y            \
     python-support                 \
     python-urlgrabber              \
     python-virtualenv              \
+    software-properties-common     \
     tomcat7                        \
     unzip                          \
     vim                            \
     zip                            \
     zlib1g-dev
+
+sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable && sudo apt-get update
+sudo apt-get install -y libgdal-dev
+sudo apt-get install -y gdal-bin
 
 sudo pip install virtualenvwrapper
 
@@ -78,7 +83,7 @@ sudo chown $USER $INSTALL_DIR
 cd $INSTALL_DIR
 
 # GeoNode GitHub repo
-git clone https://github.com/ua-snap/geonode.git
+git clone -b 2.4.x https://github.com/ua-snap/geonode.git
 
 # Create geonode user and databases in PSQL
 sudo -u postgres psql -c "CREATE USER geonode WITH PASSWORD 'geonode'"
@@ -121,27 +126,48 @@ workon geonode
 # Install the GeoNode Python package
 pip install -e geonode
 
-# Download and untar the GDAL 1.10.0 Python package
-pip install --download=. --no-use-wheel GDAL==1.10.0
-tar -zxvf GDAL-1.10.0.tar.gz
+# Download and untar the GDAL 1.11.2 Python package
+pip install --download=. --no-use-wheel GDAL==1.11.2
+tar -zxvf GDAL-1.11.2.tar.gz
 
 # Edit the gdal_config variable within the setup.cfg of GDAL to point to the correct
 # gdal-config location.
-sed -e 's/gdal_config = ..\/..\/apps\/gdal-config/gdal_config = \/usr\/bin\/gdal-config/' < GDAL-1.10.0/setup.cfg > GDAL-1.10.0/setup2.cfg
-mv GDAL-1.10.0/setup2.cfg GDAL-1.10.0/setup.cfg
+sed -e 's/gdal_config = ..\/..\/apps\/gdal-config/gdal_config = \/usr\/bin\/gdal-config/' < GDAL-1.11.2/setup.cfg > GDAL-1.11.2/setup2.cfg
+mv GDAL-1.11.2/setup2.cfg GDAL-1.11.2/setup.cfg
 
 # Export the include directory of GDAL to C and C++ include pathes
 export CPLUS_INCLUDE_PATH=/usr/include/gdal
 export C_INCLUDE_PATH=/usr/include/gdal
 
 # Build the GDAL extensions
-cd GDAL-1.10.0
+cd GDAL-1.11.2
 python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
 cd ..
 
-# Install GDAL 1.10.0 Python package
-pip install -e GDAL-1.10.0
-rm GDAL-1.10.0.tar.gz
+# Install GDAL 1.11.2 Python package
+pip install -e GDAL-1.11.2
+rm GDAL-1.11.2.tar.gz
+
+# Install all required software for MapProxy
+sudo aptitude install -y python-imaging   \
+    python-yaml                           \
+    libproj0                              \
+    libgeos-dev                           \
+    python-lxml                           \
+    libgdal-dev                           \
+    python-shapely                        \ 
+    build-essential                       \
+    python-dev                            \
+    libjpeg-dev                           \
+    zlib1g-dev                            \
+    libfreetype6-dev
+
+# Install MapProxy and its base configuration
+pip install MapProxy
+mapproxy-util create -t base-config mapventure-mapproxy
+cd mapventure-mapproxy
+cp $INSTALL_DIR/../mapventure-mapproxy.yaml mapproxy.yaml 
+cd ..
 
 # Increase JVM heap size for GeoServer when launched with Paver to boost
 # GeoServer performance, especially with raster overlays.
@@ -180,5 +206,10 @@ echo "1. vagrant ssh "
 echo "2. workon geonode "
 echo "3. cd $INSTALL_DIR/geonode "
 echo "4. python manage.py changepassword admin "
+echo 
+echo "Also, MapProxy has been installed to proxy the OSM Humanitarian tiles. You can view MapProxy by running the following commands:"
+echo "1. vagrant ssh "
+echo "2. workon geonode "
+echo "3. mapproxy-util serve-develop -b 0.0.0.0:8888 $INSTALL_DIR/mapventure-mapproxy/mapproxy.yaml "
 echo
 echo "Build of GeoNode finished."

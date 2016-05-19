@@ -189,6 +189,21 @@ Once you complete the production setup instructions, it will not be easy to go b
 
 1. Visit `http://<public domain>/` in your browser. Everything should now be working.
 
+## Starting MapProxy with OSM Humanitarian layer
+
+1. MapProxy is installed as part of the initial install in Vagrant. To start this in Vagrant, run these commands:
+   ```
+   vagrant ssh
+   workon geonode
+   mapproxy-util serve-develop -b 0.0.0.0:8888 $INSTALL_DIR/mapventure-mapproxy/mapproxy.yaml
+   ```
+
+1. With MapProxy running, you can view the OSM Humanitarian layer at:
+   
+   ```
+   http://localhost:8888/demo/?tms_layer=osm&format=png&srs=EPSG%3A3857
+   ```
+
 ## Creating and Restoring from Backups
 
 This section can be used to either create a backup of GeoNode and GeoServer from a production or development environment and restoring this backup on either a development or production environment.
