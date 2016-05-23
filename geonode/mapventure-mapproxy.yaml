@@ -37,6 +37,6 @@ sources:
 
 grids:
     webmercator:
-        base: GLOBAL_WEBMERCATOR                        
-    
-globals: 
+        base: GLOBAL_WEBMERCATOR
+
+globals:
