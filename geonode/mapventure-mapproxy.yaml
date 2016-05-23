@@ -1,0 +1,42 @@
+services:
+  demo:
+  tms:
+    use_grid_names: true
+    # origin for /tiles service
+    origin: 'nw'
+  kml:
+      use_grid_names: true
+  wmts:
+  wms:
+    srs: ['EPSG:3338']
+    md:
+      title: MapProxy WMS Proxy
+      abstract: This is a minimal MapProxy example.
+
+layers:
+  - name: osm
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm_cache]
+
+caches:
+  osm_cache:
+    grids: [webmercator]
+    sources: [osm_tms]
+
+sources:
+  osm_wms:
+    type: wms
+    req:
+      # use of this source is only permitted for testing
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm
+  osm_tms:
+    type: tile
+    url: http://b.tile.openstreetmap.fr/hot/%(z)s/%(x)s/%(y)s.png
+    grid: GLOBAL_WEBMERCATOR
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
+
+globals:
