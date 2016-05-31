@@ -6,6 +6,8 @@
 !restore.sh
 !local_settings.py
 !update_geonode.sh
+!FIRE/
+!FIRE/*
 !NCEP/
 NCEP/*
 !NCEP/ncep_convert.sh
