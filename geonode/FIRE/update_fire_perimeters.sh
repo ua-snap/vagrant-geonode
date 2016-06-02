@@ -1,25 +1,23 @@
 #! /bin/bash
+# This script updates the Active Fires layer for the current year.
+# Maintainer: Bob Torgerson - SNAP (Scenarios Network of Alaska & Arctic Planning)
 
 # If this is running on a local dev VM, we need
 # some prefixes
 if [ -z "$MV_LOCAL" ]; then
-	# Non-local env
-	echo "Running in production environment..."
-	prefix='geonode'
-	export INSTALL_DIR=/home/geonode/
+  # Non-local env
+  echo "Running in production environment..."
+  prefix='geonode'
+  export INSTALL_DIR=/home/geonode/
 else
-	echo "Running in dev VM environment..."
-	export INSTALL_DIR=/install/portal/
-	prefix=''
+  echo "Running in dev VM environment..."
+  export INSTALL_DIR=/install/portal/
+  prefix=''
 fi
-
-# This script updates the Active Fires layer for the current year.
-# Maintainer: Bob Torgerson - SNAP (Scenarios Network of Alaska & Arctic Planning)
 
 # Configure geonode's virtual environment
 export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
-export WORKON_HOME="~$prefix/.venvs"
-source `which virtualenvwrapper.sh`
+export WORKON_HOME="/home/$prefix/.venvs"
 
 source "$WORKON_HOME/geonode/bin/activate"
 
