@@ -179,8 +179,8 @@ if __name__ == '__main__':
 			run( output_directory, service, group, fmat='GeoJSON', ext='.json' )
 
 	# clean - join perims
-	os.chdir( output_directory )
-	os.system( 'python clean_join_perims_points.py ' + '-pts ' + 'fire_2016_all.json' + ' -pall ' + 'fire_perimeters_2016_all.json' +  ' -pactive ' + 'fire_perimeters_2016_active.json' + ' -p ' + output_directory )
+	# os.chdir( output_directory )
+	os.system( 'python ./clean_join_perims_points.py ' + '-pts ' + 'fire_2016_all.json' + ' -pall ' + 'fire_perimeters_2016_all.json' +  ' -pactive ' + 'fire_perimeters_2016_active.json' + ' -p ' + output_directory )
 
 	# this can be used to run the query and output to GeoJSON if an old version of GDAL/OGR is being used without dates update
 	# run2( output_directory, baseurl, whereclause, service, group, fmat='GeoJSON', ext='.json' )

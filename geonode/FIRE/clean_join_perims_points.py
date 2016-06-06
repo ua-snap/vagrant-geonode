@@ -1,4 +1,3 @@
-
 # geojson data that will be used to update the data
 # pts = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fires_2016_all.json'
 # perims_all = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fireperimeters_2016_all.json'
@@ -10,7 +9,7 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	perims = gpd.read_file( perims_all )
 	perims_active = gpd.read_file( perims_active )
 
-	# merge and add ACTIVENOW column --> HARDWIRED AND DANGERTOWN™ 
+	# merge and add ACTIVENOW column --> HARDWIRED AND DANGERTOWN
 	# joined = perims.join( fires_clean, how='left', on=join_field, lsuffix='_pol', rsuffix='_pts' )
 	fires_clean = fires.drop( ['geometry', 'NAME'] , axis=1 )
 	merged_pols = perims.merge( fires_clean, how='left', left_on=join_field_perims, right_on=join_field_pts, suffixes=['_pol','_pts'] )
@@ -85,7 +84,7 @@ if __name__ == '__main__':
 
 	# parse commandline args
 	# output_directory = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016' # '/Users/malindgren/Documents/firemap/fire_2016'
-	parser = argparse.ArgumentParser( description='GET FIRE DATA FROM THE AICC REST SERVICES' )\
+	parser = argparse.ArgumentParser( description='GET FIRE DATA FROM THE AICC REST SERVICES' )
 	parser.add_argument( '-pts', '--pts', action='store', dest='pts', type=str, help='path to geojson all pts data from the AICC ESRI REST services' )
 	parser.add_argument( '-pall', '--pall', action='store', dest='perims_all', type=str, help='path to geojson all perimeters data from the AICC ESRI REST services' )
 	parser.add_argument( '-pactive', '--pactive', action='store', dest='perims_active', type=str, help='path to geojson active perimeters data from the AICC ESRI REST services' )
@@ -100,4 +99,4 @@ if __name__ == '__main__':
 	# join_field_pts = args.join_field_pts
 
 	os.chdir( output_directory )
-	main()
+	main( pts, perims_all, perims_active, output_directory )
