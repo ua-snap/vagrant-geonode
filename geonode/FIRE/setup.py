@@ -1,6 +1,6 @@
 from setuptools import setup
 
-dependencies_list = ['rasterio','fiona','shapely','pandas','geopandas','scipy','numpy', 'requests']
+dependencies_list = ['rasterio','fiona','shapely','pandas','geopandas','scipy','numpy', 'requests', 'arcgis-rest-query']
 
 classifiers = [ 	'Development Status :: 3 - Alpha',
 			'Operating System :: POSIX :: Linux',
@@ -18,12 +18,12 @@ classifiers = [ 	'Development Status :: 3 - Alpha',
 
 setup(	name='fireventure',
 		version='3.0',
-		description='tool to return summaries of ALFRESCO Fire Dynamics Model output GeoTiff rasters',
-		url='https://github.com/ua-snap/alfresco-calibration',
+		description='get data from AICC rest services',
+		url='',
 		author='Michael Lindgren',
 		author_email='malindgren@alaska.edu',
 		license='MIT',
-		packages=['alfresco_postprocessing'],
+		packages=[ 'fireventure' ],
 		install_requires=dependencies_list,
 		zip_safe=False,
 		include_package_data=True,
