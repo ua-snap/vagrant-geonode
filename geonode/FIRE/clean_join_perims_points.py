@@ -39,13 +39,13 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	pts_noperim[time_fields[1]] = [ time.ctime(i) for i in pts_noperim[time_fields[1]].astype(int)/1000 if i != np.nan ]
 
 	# re-geo the geometry column
-	merged_pols = gpd.GeoDataFrame( merged_pols, geometry='geometry' ) # crs={'init':'epsg:3338'}, #this crs may be incorrect
-	pts_noperim = gpd.GeoDataFrame( pts_noperim, geometry='geometry' ) # crs={'init':'epsg:3338'}, #this crs may be incorrect
+	merged_pols = gpd.GeoDataFrame( merged_pols, geometry='geometry', crs={'init':'epsg:3338'}) #this crs may be incorrect
+	pts_noperim = gpd.GeoDataFrame( pts_noperim, geometry='geometry', crs={'init':'epsg:3338'}) #this crs may be incorrect
 
 	# write merged file to a new GeoJSON
-	output_filename = 'fireperimeters_2016_all_cleaned_joined.json'
-	if os.path.exists( output_filename ):
-		os.remove( output_filename )
+	# output_filename = 'fireperimeters_2016_all_cleaned_joined.json'
+	# if os.path.exists( output_filename ):
+	# 	os.remove( output_filename )
 
 	# merged_pols.to_file( output_filename, driver='GeoJSON' )
 
