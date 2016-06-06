@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*- 
+
 # geojson data that will be used to update the data
 # pts = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fires_2016_all.json'
 # perims_all = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fireperimeters_2016_all.json'
@@ -19,7 +21,7 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	keep = [ i for i in fires.ID if i not in perims.FIREID ]
 	pts_noperim = fires[ fires.ID.isin( keep ) ]
 
-	# keep the fields that we want™
+	# keep the fields that we want
 	pols = [ 'NAME', 'ACRES', 'FIREYEAR', 'UPDATETIME', 'FIREID', 'ACTIVENOW', 'PERIMETERDATE', 'geometry' ]
 	pts = [ 'GENERALCAUSE', 'PRIMARYFUELTYPE', 'DISCOVERYDATETIME', 'ISACTIVE' ]
 	fields = pols + pts
