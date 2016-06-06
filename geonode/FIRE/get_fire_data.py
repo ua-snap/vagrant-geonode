@@ -118,6 +118,9 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser( description='program to parse ALFRESCO Post-Processing json data into csv files' )
 	parser.add_argument( '-p', '--output_directory', action='store', dest='output_directory', type=str, help='path to output directory' )
 	
+	args = parser.parse_args()
+	output_directory = args.output_directory
+
 	services = {'FirePerimeters':"FIREYEAR='2016'", 'Fires':"FIRESEASON='2016'"}
 	groups = {'active':0,'all':1}
 	for service in services:
