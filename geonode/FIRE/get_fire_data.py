@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
 	# parse commandline args
 	# output_directory = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016' # '/Users/malindgren/Documents/firemap/fire_2016'
-	parser = argparse.ArgumentParser( description='program to parse ALFRESCO Post-Processing json data into csv files' )
+	parser = argparse.ArgumentParser( description='GET FIRE DATA FROM THE AICC REST SERVICES' )
 	parser.add_argument( '-p', '--output_directory', action='store', dest='output_directory', type=str, help='path to output directory' )
 	
 	args = parser.parse_args()
@@ -174,11 +174,16 @@ if __name__ == '__main__':
 
 			f.get_data( layerid, QUERY )
 
-			run( output_directory, service, group, fmat='ESRI Shapefile', ext='.shp' )
+			# run( output_directory, service, group, fmat='ESRI Shapefile', ext='.shp' )
 			run( output_directory, service, group, fmat='GeoJSON', ext='.json' )
 
-			# this can be used to run the query and output to GeoJSON if an old version of GDAL/OGR is being used without dates update
-			# run2( output_directory, baseurl, whereclause, service, group, fmat='GeoJSON', ext='.json' )
+
+	# clean - join perims
+	os.chdir( output_directory )
+	os.system( 'clean_join_perims.py ' + '-pts ' + 'fire_2016_all.json' + ' -pall ' + 'fire_perimeters_2016_all.json' +  ' -pactive ' + 'fire_perimeters_2016_active.json' + ' -p ' + output_directory )
+
+	# this can be used to run the query and output to GeoJSON if an old version of GDAL/OGR is being used without dates update
+	# run2( output_directory, baseurl, whereclause, service, group, fmat='GeoJSON', ext='.json' )
 
 	# convert to GeoJSON? -- done
 	# ogr2ogr -f GeoJSON fire_perimeters_2016_all.json http://afs.ak.blm.gov/arcgis/rest/services/MapAndFeatureServices/FirePerimeters/MapServer/1/query\?where\=FIREYEAR+%3D%272016%27\&outFields\=\*\&f\=pjson
