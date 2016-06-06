@@ -111,9 +111,14 @@ if __name__ == '__main__':
 	# run an example query for the available fire perimeters for this season
 	import requests, subprocess, json, collections
 	import numpy as np
+	import argparse
+
+	# parse commandline args
+	# output_directory = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016' # '/Users/malindgren/Documents/firemap/fire_2016'
+	parser = argparse.ArgumentParser( description='program to parse ALFRESCO Post-Processing json data into csv files' )
+	parser.add_argument( '-p', '--output_directory', action='store', dest 'output_'ir'ctory', type=str, help="path to output directory" )
 	
 	services = {'FirePerimeters':"FIREYEAR='2016'", 'Fires':"FIRESEASON='2016'"}
-	output_directory = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016' # '/Users/malindgren/Documents/firemap/fire_2016'
 	groups = {'active':0,'all':1}
 	for service in services:
 		for group in groups:
@@ -174,4 +179,3 @@ if __name__ == '__main__':
 
 	# convert to GeoJSON? -- done
 	# ogr2ogr -f GeoJSON fire_perimeters_2016_all.json http://afs.ak.blm.gov/arcgis/rest/services/MapAndFeatureServices/FirePerimeters/MapServer/1/query\?where\=FIREYEAR+%3D%272016%27\&outFields\=\*\&f\=pjson
-
