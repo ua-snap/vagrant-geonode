@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*- 
 
 # geojson data that will be used to update the data
-# pts = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fires_2016_all.json'
-# perims_all = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fireperimeters_2016_all.json'
-# perims_active = '/workspace/Shared/Tech_Projects/FireMap/project_data/fireseason_2016/fireperimeters_2016_active.json'
+# pts = './data/fires_2016_all.json'
+# perims_all = './data/fireperimeters_2016_all.json'
+# perims_active = './data/fireperimeters_2016_active.json'
 
 def main( pts, perims_all, perims_active, output_directory, join_field_perims='FIREID', join_field_pts='ID' ):
+	import time
+	import numpy as np
 	# read in the data
 	fires = gpd.read_file( pts )
 	perims = gpd.read_file( perims_all )
@@ -31,7 +33,7 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	pts_noperim = pts_noperim.ix[ :, fields ]
 
 	# update the time fields
-	time_fields = [ 'UPDATETIME','DISCOVERYDATETIME' ]
+	time_fields = [ 'UPDATETIME','DISCOVERYDATETIME', 'PERIMETERDATE' ]
 	for t in time_fields:
 		merged_pols[t] = [ time.ctime(i) for i in merged_pols[t].astype(int)/1000 ]
 
