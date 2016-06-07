@@ -33,12 +33,12 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	pts_noperim = pts_noperim.ix[ :, fields ]
 
 	# update the time fields
-	time_fields = [ 'UPDATETIME','DISCOVERYDATETIME', 'PERIMETERDATE' ]
-	for t in time_fields:
-		merged_pols[t] = [ time.ctime(i) for i in merged_pols[t].astype(int)/1000 ]
+	# time_fields = [ 'UPDATETIME','DISCOVERYDATETIME', 'PERIMETERDATE' ]
+	# for t in time_fields:
+	# 	merged_pols[t] = [ time.ctime(i) for i in merged_pols[t].astype(int)/1000 ]
 
-	# update the dates in the points without perims layer
-	pts_noperim[time_fields[1]] = [ time.ctime(i) for i in pts_noperim[time_fields[1]].astype(int)/1000 if i != np.nan ]
+	# # update the dates in the points without perims layer
+	# pts_noperim[time_fields[1]] = [ time.ctime(i) for i in pts_noperim[time_fields[1]].astype(int)/1000 if i != np.nan ]
 
 	# re-geo the geometry column
 	merged_pols = gpd.GeoDataFrame( merged_pols, geometry='geometry', crs={'init':'epsg:3338'}) #this crs may be incorrect
