@@ -50,7 +50,7 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	# merged_pols.to_file( output_filename, driver='GeoJSON' )
 
 	output_filename = 'fireperimeters_2016_all_cleaned_joined.shp'
-	merged_pols.to_file( output_filename, driver='ESRI Shapefile', crs={'init':'epsg:3338'} )
+	merged_pols.to_file( output_filename, driver='ESRI Shapefile' )
 
 	# this is a hack since the to_file method is failing...
 	# with open( output_filename, 'w' ) as f:
@@ -64,7 +64,7 @@ def main( pts, perims_all, perims_active, output_directory, join_field_perims='F
 	# pts_noperim.to_file( output_filename, driver='GeoJSON' )
 
 	output_filename = 'fires_2016_cleaned_noperim.shp'
-	pts_noperim.to_file( output_filename, driver='ESRI Shapefile', crs={'init':'epsg:3338'} )
+	pts_noperim.to_file( output_filename, driver='ESRI Shapefile' )
 
 	# # this is a hack since the to_file method is failing...
 	# with open( output_filename, 'w' ) as f:
