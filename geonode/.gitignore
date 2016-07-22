@@ -1,16 +1,7 @@
 # Ignore everything in this directory
 *
-# Except this file
+
+# Except these files
 !.gitignore
 !backup.sh
 !restore.sh
-!local_settings.py
-!update_geonode.sh
-!FIRE/
-!FIRE/*
-!NCEP/
-NCEP/*
-!NCEP/ncep_convert.sh
-!NCEP/temp_color_k.txt
-!NCEP/temp_color_c.txt
-!mapventure-mapproxy.yaml
