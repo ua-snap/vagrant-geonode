@@ -28,38 +28,29 @@ sudo apt-get install -y            \
     ant                            \
     apache2                        \
     build-essential                \
-    gdal-bin                       \
     gettext                        \
     git                            \
     libapache2-mod-wsgi            \
     libgdal1h                      \
-    libgdal-dev                    \
-    libgeos-dev                    \
     libjpeg-dev                    \
     libpng-dev                     \
     libpq-dev                      \
-    libproj-dev                    \
     libxml2-dev                    \
     libxslt1-dev                   \
     libpq-dev                      \
     maven2                         \
     openjdk-7-jre                  \
     patch                          \
-    postgresql                     \
-    postgis*                       \
+    postgresql-9.3-postgis-2.1     \
     postgresql-contrib             \
     python                         \
     python-dev                     \
-    python-gdal                    \
     python-httplib2                \
     python-imaging                 \
     python-lxml                    \
     python-nose                    \
     python-pastescript             \
     python-pip                     \
-    python-psycopg2                \
-    python-pyproj                  \
-    python-shapely                 \
     python-software-properties     \
     python-support                 \
     python-urlgrabber              \
@@ -70,10 +61,6 @@ sudo apt-get install -y            \
     vim                            \
     zip                            \
     zlib1g-dev
-
-sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable && sudo apt-get update
-sudo apt-get install -y libgdal-dev
-sudo apt-get install -y gdal-bin
 
 sudo pip install virtualenvwrapper
 
@@ -111,6 +98,8 @@ echo "export WORKON_HOME=~/.venvs" >> ~/.bashrc
 echo "source /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
 echo "export PIP_DOWNLOAD_CACHE=$HOME/.pip-downloads" >> ~/.bashrc
 echo "export INSTALL_DIR=$INSTALL_DIR" >> ~/.bashrc
+# LD_PRELOAD is needed for python-gdal bindings
+echo "export LD_PRELOAD=/usr/local/lib/libgdal.so.1" >> ~/.bashrc
 
 # Sourcing these from the BASHRC was not working in the script. Explicitly,
 # setting these from the BASHRC for immediate usage.
@@ -126,49 +115,6 @@ workon geonode
 # Install the GeoNode Python package
 pip install -e geonode
 
-# Download and untar the GDAL 1.11.2 Python package
-pip install --download=. --no-use-wheel GDAL==1.11.2
-tar -zxvf GDAL-1.11.2.tar.gz
-
-# Edit the gdal_config variable within the setup.cfg of GDAL to point to the correct
-# gdal-config location.
-sed -e 's/gdal_config = ..\/..\/apps\/gdal-config/gdal_config = \/usr\/bin\/gdal-config/' < GDAL-1.11.2/setup.cfg > GDAL-1.11.2/setup2.cfg
-mv GDAL-1.11.2/setup2.cfg GDAL-1.11.2/setup.cfg
-
-# Export the include directory of GDAL to C and C++ include pathes
-export CPLUS_INCLUDE_PATH=/usr/include/gdal
-export C_INCLUDE_PATH=/usr/include/gdal
-
-# Build the GDAL extensions
-cd GDAL-1.11.2
-python setup.py build_ext --gdal-config=/usr/local/bin/gdal-config
-cd ..
-
-# Install GDAL 1.11.2 Python package
-pip install -e GDAL-1.11.2
-rm GDAL-1.11.2.tar.gz
-
-# Install all required software for MapProxy
-sudo aptitude install -y python-imaging   \
-    python-yaml                           \
-    libproj0                              \
-    libgeos-dev                           \
-    python-lxml                           \
-    libgdal-dev                           \
-    python-shapely                        \ 
-    build-essential                       \
-    python-dev                            \
-    libjpeg-dev                           \
-    zlib1g-dev                            \
-    libfreetype6-dev
-
-# Install MapProxy and its base configuration
-pip install MapProxy
-mapproxy-util create -t base-config mapventure-mapproxy
-cd mapventure-mapproxy
-cp $INSTALL_DIR/../mapventure-mapproxy.yaml mapproxy.yaml 
-cd ..
-
 # Increase JVM heap size for GeoServer when launched with Paver to boost
 # GeoServer performance, especially with raster overlays.
 sed -e "s/-Xmx512m/-Xmx4096m/" < geonode/pavement.py > geonode/pavement2.py
@@ -177,6 +123,22 @@ mv geonode/pavement2.py geonode/pavement.py
 # Remove default base layers from GeoNode
 sed -i'.bak' -r '/^MAP_BASELAYERS/, /}]$/ d' geonode/geonode/settings.py
 sed -i'.bak' -r '/^DEFAULT_MAP_ZOOM/ a MAP_BASELAYERS = []' geonode/geonode/settings.py
+
+# Install other deps prior to running paver setup/sync
+pip install psycopg2
+
+# GDAL is our favorite thing to install!
+wget http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz
+tar xvzf gdal-1.11.2.tar.gz
+cd gdal-1.11.2
+./configure --with-python
+make
+sudo make install
+pip install GDAL==1.11.2
+# LD_PRELOAD is needed for `osgeo` package to load properly
+# once it's been installed.
+export LD_PRELOAD=/usr/local/lib/libgdal.so.1
+cd ..
 
 # Run paver setup and paver sync to get the paver start / stop commands for the
 # GeoNode and GeoServer tools.
@@ -191,9 +153,7 @@ sudo update-rc.d tomcat7 disable
 
 # Configure PostGIS as the GeoNode backend
 cd geonode
-pip install psycopg2
 python manage.py syncdb --noinput
-python manage.py createsuperuser --username=admin --email=ad@m.in --noinput
 python manage.py collectstatic --noinput
 
 # Start GeoServer and Django for GeoNode
@@ -206,10 +166,5 @@ echo "1. vagrant ssh "
 echo "2. workon geonode "
 echo "3. cd $INSTALL_DIR/geonode "
 echo "4. python manage.py changepassword admin "
-echo 
-echo "Also, MapProxy has been installed to proxy the OSM Humanitarian tiles. You can view MapProxy by running the following commands:"
-echo "1. vagrant ssh "
-echo "2. workon geonode "
-echo "3. mapproxy-util serve-develop -b 0.0.0.0:8888 $INSTALL_DIR/mapventure-mapproxy/mapproxy.yaml "
 echo
 echo "Build of GeoNode finished."
