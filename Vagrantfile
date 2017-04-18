@@ -71,7 +71,6 @@ Vagrant.configure(2) do |config|
   config.trigger.after [:up, :reload, :resume] do
     info "Restarting Django & Geonode"
     run_remote "
-      su - vagrant
       export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
       export WORKON_HOME=~/.venvs
       source /usr/local/bin/virtualenvwrapper.sh

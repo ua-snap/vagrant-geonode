@@ -156,8 +156,11 @@ cd geonode
 python manage.py syncdb --noinput
 python manage.py collectstatic --noinput
 
-# Start GeoServer and Django for GeoNode
-paver start_geoserver && paver start_django -b 0.0.0.0:8000
+# Utility command to restart the whole stack
+# Paver ReStart All
+echo "alias prsa=\"paver stop && paver start_geoserver && paver start_django -b 0.0.0.0:8000\"" >> ~/.bashrc
+# Paver ReStart Django
+echo "alias prsd=\"paver stop_django && paver start_django -b 0.0.0.0:8000\"" >> ~/.bashrc
 
 echo
 echo "A new admin user account has been created but requires a password to be used on the website."
