@@ -22,8 +22,12 @@ if [ -d $INSTALL_DIR ]; then
   rm -rf $INSTALL_DIR
 fi
 
+# Start with installing the version of GDAL we want
+sudo add-apt-repository -y ppa:ubuntugis/ppa && sudo apt-get update
+sudo apt-get install -y gdal-bin=1.11.2+dfsg-1~exp2~trusty
+sudo apt-get install -y libgdal-dev=1.11.2+dfsg-1~exp2~trusty
+
 # Make sure apt-get is updated and install all necessary pacakges
-sudo apt-get update
 sudo apt-get install -y            \
     ant                            \
     apache2                        \
@@ -170,5 +174,6 @@ echo "2. workon geonode "
 echo "3. cd $INSTALL_DIR/geonode "
 echo "4. python manage.py changepassword admin "
 echo "5. prsa "
+echo
 echo
 echo "Build of GeoNode finished."
