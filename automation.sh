@@ -158,16 +158,17 @@ python manage.py collectstatic --noinput
 
 # Utility command to restart the whole stack
 # Paver ReStart All
-echo "alias prsa=\"paver stop && paver start_geoserver && paver start_django -b 0.0.0.0:8000\"" >> ~/.bashrc
+echo "alias prsa=\"workon geonode && cd $INSTALL_DIR/geonode && paver stop && paver start_geoserver && paver start_django -b 0.0.0.0:8000 && cd -\"" >> ~/.bashrc
 # Paver ReStart Django
-echo "alias prsd=\"paver stop_django && paver start_django -b 0.0.0.0:8000\"" >> ~/.bashrc
+echo "alias prsd=\"workon geonode && cd $INSTALL_DIR/geonode && paver stop_django && paver start_django -b 0.0.0.0:8000 && cd -\"" >> ~/.bashrc
 
 echo
 echo "A new admin user account has been created but requires a password to be used on the website."
-echo "Please do the following manual steps: "
+echo "Please do the following manual steps to set the admin password and start the GeoNode/GeoServer stack: "
 echo "1. vagrant ssh "
 echo "2. workon geonode "
 echo "3. cd $INSTALL_DIR/geonode "
 echo "4. python manage.py changepassword admin "
+echo "5. prsa "
 echo
 echo "Build of GeoNode finished."

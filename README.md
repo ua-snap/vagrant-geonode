@@ -10,7 +10,25 @@ The [vagrant-triggers](https://github.com/emyl/vagrant-triggers) plugin must be 
 vagrant plugin install vagrant-triggers
 ```
 
-With that installed, clone this repo and `vagrant up`.  After a while, GeoNode should be available on your host machine at `http://localhost:8000`.
+With that installed, clone this repo and `vagrant up`. Follow the instructions printed at the end of the Vagrant process to set an admin password and start the GeoNode/GeoServer stack. After that, GeoNode should be available on your host machine at `http://localhost:8000`.
+
+## Restarting GeoNode and GeoServer
+
+GeoNode and GeoServer typically need to be restarted after going through a `vagrant suspend` / `vagrant up` cycle or host OS reboot.
+
+To restart the entire GeoNode/GeoServer stack with Paver, run the custom `psra` alias:
+
+```bash
+vagrant ssh
+prsa
+```
+
+To restart just GeoNode (Django), use the custom 'psrd' alias:
+
+```bash
+vagrant ssh
+prsd
+```
 
 ## Production setup
 
