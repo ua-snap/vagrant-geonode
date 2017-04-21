@@ -54,9 +54,9 @@ else
   cd $BACKUP_NAME
   
   if [ $PROD_DOMAIN ]; then
-    PROD_GEOSERVER_URL="$PROD_DOMAIN/geoserver"
+    PROD_GEOSERVER_URL="$PROD_DOMAIN:8080/geoserver"
     PROD_GEOSERVER_PATH="/var/lib/tomcat7/webapps/geoserver"
-    PROD_GEONODE="$PROD_DOMAIN/"
+    PROD_GEONODE="$PROD_DOMAIN:8000/"
     PROD_LOCALHOST="localhost/"
 
     DEV_GEOSERVER_URL="localhost:8080/geoserver"
