@@ -259,7 +259,8 @@ This section can be used to either create a backup of GeoNode and GeoServer from
    vagrant ssh
    workon geonode
    cd /install
-   ./restore.sh -f backup-10-10-15.tgz
+   ./restore.sh -p mapventure.iarc.uaf.edu -f backup-04-18-2017.tgz
+   prsa # paver restart both geoserver and django
    ```
 
    To restore a backup from a development environment into a production server:
