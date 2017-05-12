@@ -1,6 +1,0 @@
--50.0 purple
--30.0 blue
--10.0 green
-10.0 yellow
-30.0 orange
-50.0 red
